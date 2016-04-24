@@ -4,12 +4,4 @@ title: About
 permalink: /about/
 ---
 
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](http://jekyllrb.com/)
-
-You can find the source code for the Jekyll new theme at:
-{% include icon-github.html username="jglovier" %} /
-[jekyll-new](https://github.com/jglovier/jekyll-new)
-
-You can find the source code for Jekyll at
-{% include icon-github.html username="jekyll" %} /
-[jekyll](https://github.com/jekyll/jekyll)
+I'm Adam Kosiorek. I'm passionate about machine learning. Currently I'm working on my master thesis on [Arm Movement Prediction](http://brml.org/positions/master-thesis-arm-movement-prediction/) with [Patrick van der Smagt](http://brml.org/people/smagt/) at [TUM](http://www.tum.de/en). I'm interested in (deep) unsupervised and reinforcement learning and generative models.
