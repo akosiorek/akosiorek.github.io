@@ -64,9 +64,9 @@ $$\begin{align}
 
 where $$z^i = (z^i_{what}, z^i_{where}, z^i_{pres})$$ are the latent variables describing the apperance, location and presence of an object, respectively.
 * Presence & Location models: Given the hidden state $$h^i$$, they predict $$z^i_{pres}$$ and $$z^i_{where}$$.
-* Spatial Transformer: Given the location parameters $$z^i_{pres}$$, it extract a crop  of the original input image $x^i_{att}$. It will later place a reconstructed crop $$y^i_{att}$$ into the canvas.
+* Spatial Transformer: Given the location parameters $$z^i_{pres}$$, it extract a crop  of the original input image $$x^i_{att}$$. It will later place a reconstructed crop $$y^i_{att}$$ into the canvas.
 * Glimpse encoder: It encodes $$x^i_{att}$$ into low-dimensional latent representation $$z^i_{what}$$.
-* Glimpse decoder: It decodes $$z^i_{what}$$ in the reconstructed glimpse $$y^i_{att}$.
+* Glimpse decoder: It decodes $$z^i_{what}$$ in the reconstructed glimpse $$y^i_{att}$$.
 
 I defined all these components in a [single file](https://github.com/akosiorek/attend_infer_repeat/blob/master/attend_infer_repeat/modules.py) as [Sonnet](https://github.com/deepmind/sonnet) modules. 
 Since we don't want to dwell on complicated architectures, I used  small fully-connected neural networks with 2 hidden layers of 256 units each and ELU nonlinearities for every component. 
