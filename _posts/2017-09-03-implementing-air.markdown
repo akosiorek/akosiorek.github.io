@@ -81,7 +81,7 @@ I used `tf.NormalWithSoftplusScale` for numerical stability of the scale paramet
 $$z_{pres}$$ is much more tricky.
  At inference time, it comes from a Beroulli distribution parametrised by an output of a neural net (presence mdoel). 
 When the previous sample was equal to 1, we take the current sample as is. 
-As soon as we draw a sample equal to 0, however, all subsequent samples have to be set to zero, too. 
+As soon as we draw a sample equal to zero, however, all subsequent samples have to be set to zero, too. 
 This results in a modified geometrical distribution, for which we have to account when we implement the KL-divergence with the prior. For this reason, I implemented a `NumStepsDistribution` in [prior.py](https://github.com/akosiorek/attend_infer_repeat/blob/master/attend_infer_repeat/prior.py) that creates the modified geometric distribution given Bernoulli probabilities at consecutive steps.
 
 # Piors
@@ -110,12 +110,19 @@ $$\begin{align}
 \nabla_\phi \mathbb{E}_{q_\phi(z)} [ \mathcal{L} (z)] = \mathbb{E}_{q_\phi(z)} [\mathcal{L}(z) \nabla_\phi \log q_\phi(z) ]
 \end{align}$$
 
-It turns out that the expectation of this expression is equal to 0, and therefore we can either add an arbitrary term with 0 expectation without changing the result. 
+It turns out that the expectation of this expression is equal to 0, and therefore we can either add an arbitrary term with zero expectation without changing the result. 
 If what we add is negatively correlated with $$\mathcal{L}$$, we will reduce variance. AIR uses "neural baselines" and cites [Neural Variational Inference and Learning in Belief Networks](https://arxiv.org/abs/1402.0030) by A. Mnih and K. Gregor, but doesn't give much detail.
 
 I used a multilayer perceptron with 2 hidden layers of 256 and 128 neurons each, with a single output unit. As input I used the original flattened image concatenated with all latent variables produced by the main model. The learning rate used for training this auxiliary model (baseline) was set 10 times higher than the learning rate of the base model. 
 
 To see how REINFORCE with a neural baseline is implemented, have a look at the `AIRModel._reinforce_` method in [model.py](https://github.com/akosiorek/attend_infer_repeat/blob/master/attend_infer_repeat/model.py).
+
+# Issues
+1. My implementation is very fragile. It recovers the performance reported in the paper once for about 5 training runs. I'm not saying it's an issue with the model, it's probably just my implementation. If anyone has ideas how to improve it, please let me know.
+
+2. If I change the multi-MNIST dataset to have smaller digits, the model doesn't count as well (number of steps is wrong). That's probably an issue of my implementation, too.
+
+3. It is sensitive to initialisation of the output layers that produce the final reconstruction but also of the "where" and "pres" latent variables. If the reconstruction has too big values at the beginning of the training, the number of steps shrinks to zero and the model never recovers. Similar things happen when "where" latent variable has too big a variance at the beginning.
 
 # Conclusion
 It's a really cool if a bit complicated model. I hope this post has brought you closer to understand what's going on in the paper. I've implemented it because I have a few ideas how to use it in my research. Feel free to reach out if you have any questions or comments.
