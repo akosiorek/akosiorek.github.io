@@ -14,6 +14,7 @@ description: > # this means to ignore newlines until "baseurl:"
 #url: "http://yourdomain.com" # the base hostname & protocol for your site
 #twitter_username: jekyllrb
 github_username:  akosiorek
+linkedin_username: adamkosiorek
 
 # Build settings
 markdown: kramdown
