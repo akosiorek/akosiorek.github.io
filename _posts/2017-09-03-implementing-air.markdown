@@ -2,6 +2,7 @@
 layout: post
 title:  "Implementing Attend, Infer, Repeat"
 date:   2017-09-03 15:44:17 +0100
+comments: True
 categories: ML
 ---
 
