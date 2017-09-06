@@ -36,6 +36,25 @@ Technically, the order is different, because it has to infer presence of an obje
 What's beautiful, is that we get a variable-length representation of the image: the more complicated the image is, the longer the representation we get.
 What's even better, is that we know that each piece of description is tied to a particular location (and hopefully an object), which allows explicit reasoning about objects and relations between them.
 
+# Results
+Measuring performance of generative models is always tricky, and I'd recommend [this paper](https://arxiv.org/abs/1511.01844) for a discussion. Here are some plots similar to the ones reported by the AIR paper. The first row of the topmost figure shows the input images, rows 2-4 are reconstructions at steps 1, 2 and 3 (with marked location of the attention glimpse in red, if it exists). Rows 4-7 are the reconstructed image crops, and above each crop is the probability of executing 1, 2 or 3 steps. If the reconstructed crop is black and there is "0 with ..." written above it, it means that this step was not used (3rd step is never used, hence the last row is black). Click on the image for a higher-resolution view.
+
+<div style="margin: auto">
+  <a href="reconstruction_300k.png">
+    <img src='reconstruction_300k.png' style="width: 800px">
+  </a>
+</div>
+
+At every time-step, AIR chooses where to look in the image. The image on the left hand-side visualises the localisation policy of the spatial transformer, with red corresponding to the first step and green to the second. We see that the scanning policy is spatial with the majority of first steps located on the left hand-side of the image. The plot on the right hand-side is the counting accuracy on the validation set while training for 300k iterations, evaluated every 10k iterations.
+
+<div style="margin: auto">
+  <img src='heatmap.png' style="width: 200px">
+  <img src='acc_plot.png' style="width: 500px">
+</div>
+
+AIR can reach almost 100% accuracy in counting objects, but this outcome does heavily depend on initialisation. Very often (80% of the time) the model converges to either zero or the maximum number of steps and fails to converge to the preferred solution.
+
+
 # Why and how does it work?
 Like every VAE, AIR is trained by maximising the evidence lower bound (ELBO) $$\mathcal{L}$$ on the log probability of the data:
 
@@ -117,9 +136,9 @@ If what we add is negatively correlated with $$\mathcal{L}$$, we will reduce var
 
 Do we really need to reduce variance? Well, yes. I've measured variance on a per-parameter basis for the AIR model. Back-propagation results in variance on the order of $$10^{-2}$$. There is some variance, as we'd expect from Stochastic Gradient Decent, but it's not huge. Due to discrete latent variables, gradient of some of the parameters comes only from the REINFORCE formulation, and its variance is on the order of $$10^3$$. It's 5 order of magnitude higher, and I wouldn't expect it to be very useful for training. The neural baseline reduces the variance to about $$10^{-1}$$. It's still higher than from back-prop, but usable.
 
-I used an MLP with 2 hidden layers of 256 and 128 neurones, respectively, with a single output unit. As input I used the original flattened image concatenated with all latent variables produced by the main model. The learning rate used for training this auxiliary model (baseline) was set 10 times higher than the learning rate of the base model.
+I used an MLP with 2 hidden layers of 256 and 128 neurones, respectively, with a single output unit. As input I used the original flattened image concatenated with all latent variables produced by the main model. The baseline is trained to minimise the mean-squared error with the current reconstruction error ($$-\mathbb{E}_{q_\phi(z)} [\log p_\theta(x \mid z)]$$) of the main model as the target. The learning rate used for training this auxiliary model (baseline) was set 10 times higher than the learning rate of the base model.
 
-To see how REINFORCE with a neural baseline is implemented, have a look at the `AIRModel._reinforce_` method in [model.py](https://github.com/akosiorek/attend_infer_repeat/blob/master/attend_infer_repeat/model.py).
+To see how REINFORCE with a neural baseline is implemented, have a look at the `AIRModel._reinforce` method in [model.py](https://github.com/akosiorek/attend_infer_repeat/blob/master/attend_infer_repeat/model.py).
 
 # Issues
 1. My implementation is very fragile. It recovers the performance reported in the paper once for about 5 training runs. I'm not saying it's an issue with the model, it's probably just my implementation. If anyone has ideas how to improve it, please let me know.
