@@ -9,13 +9,14 @@ categories: ML
 
 Variational Autoencoders (VAEs) are getting more and more popular in the Machine Learning community.
 While the formulation is more involved then that of a typical feed-forward neural network, VAEs have a lot of added benefits.
-I've been recently playing with one of the more complicated VAE model: [Attend, Infer, Repeat (AIR)](https://papers.nips.cc/paper/6230-attend-infer-repeat-fast-scene-understanding-with-generative-models) by [Ali Eslami et. al.](http://arkitus.com/) from [DeepMind](https://deepmind.com/), and I must say it's really cool.
-In this blog post, I will describe the model and break it down into simple components. We will also cover implementation, or rather the issues I had while implementing it. The full implementation is available [here](https://github.com/akosiorek/attend_infer_repeat).
+I've been recently playing with one of the more complicated VAE models: [Attend, Infer, Repeat (AIR)](https://papers.nips.cc/paper/6230-attend-infer-repeat-fast-scene-understanding-with-generative-models) by [Ali Eslami et. al.](http://arkitus.com/) from [DeepMind](https://deepmind.com/), and I must say it's really cool.
+In this blog post, I will describe the model and break it down into simple components. We will also cover parts of the implementation and some issues I had while implementing it. The full implementation is available [here](https://github.com/akosiorek/attend_infer_repeat).
 
 # What does AIR do?
-Take a look at the figure below.
-Given an image, we would like to reconstruct it.
-Instead of doing it in a single shot, however, we'd like to focus on interesting parts of the image and reconstruct them one by one.
+AIR aims to reconstruct an image, but instead of doing it in a single shot, it focuses on interesting image parts one-by-one.
+The figure below demonstrates AIR's inner workings.
+It takes a look at the image, figures out how many interesting parts there are and where they are in the image.
+It then reconstructs them by painting one-part-at-a-time onto a blank canvas.
 AIR takes a look at the image, figures out how many interesting parts there are, and reconstructs it by painting one-part-at-a-time onto a blank canvas.
 Sounds easy enough?
 Well, it's not, and for two reasons:
@@ -33,11 +34,11 @@ Let's go back to the figure. AIR is called Attend, Infer, Repeat for a reason:
 
 Technically, the order is different, because it has to infer presence of an object and its location before attending to it; and the name describes only the inference process, not reconstruction.
 
-What's beautiful, is that we get a variable-length representation of the image: the more complicated the image is, the longer the representation we get.
+What's beautiful, is that we get a variable-length representation of the image: the more complicated the image is, the longer the representation will be.
 What's even better, is that we know that each piece of description is tied to a particular location (and hopefully an object), which allows explicit reasoning about objects and relations between them.
 
 # Results
-Measuring performance of generative models is always tricky, and I'd recommend [this paper](https://arxiv.org/abs/1511.01844) for a discussion. Here are some plots similar to the ones reported by the AIR paper. The first row of the topmost figure shows the input images, rows 2-4 are reconstructions at steps 1, 2 and 3 (with marked location of the attention glimpse in red, if it exists). Rows 4-7 are the reconstructed image crops, and above each crop is the probability of executing 1, 2 or 3 steps. If the reconstructed crop is black and there is "0 with ..." written above it, it means that this step was not used (3rd step is never used, hence the last row is black). Click on the image for a higher-resolution view.
+Measuring performance of generative models is always tricky, and I'd recommend [this paper](https://arxiv.org/abs/1511.01844) for a discussion. Here are some plots similar to the ones reported by the AIR paper. The first row of the topmost figure shows the input images, rows 2-4 are reconstructions at steps 1, 2 and 3 (with marked location of the attention glimpse in red, if it exists). Rows 5-7 are the reconstructed image crops, and above each crop is the probability of executing 1, 2 or 3 steps. If the reconstructed crop is black and there is "0 with ..." written above it, it means that this step was not used (3rd step is never used, hence the last row is black). Click on the image for a higher-resolution view.
 
 <div style="margin: auto">
   <a href="reconstruction_300k.png">
@@ -60,16 +61,17 @@ Like every VAE, AIR is trained by maximising the evidence lower bound (ELBO) $$\
 
    $$
     \begin{align*}
-        \log p(x) &= \mathcal{L}(\theta, \phi) + KL(q_\phi(z \mid x) \mid\mid p(z \mid x))\\
-        \mathcal{L}(\theta, \phi) &= \mathbb{E}_{q_\phi(z)} [\log p_\theta(x \mid z)]] - KL(q_\phi(z\mid x) \mid\mid p(z))
+        \log p(x) &= \mathcal{L}(\theta, \phi) + KL(q_\phi(z \mid x) \mid\mid p(z \mid x)),\\
+        \mathcal{L}(\theta, \phi) &= \mathbb{E}_{q_\phi(z)} [\log p_\theta(x \mid z)]] - KL(q_\phi(z\mid x) \mid\mid p(z)).
     \end{align*}
    $$
 
-The first term of the ELBO is a probabilistic analog of the reconstruction error and the second term acts as a regulariser. For AIR, the second term tries to keep the number of steps low, but it's also forcing the shortest encoding possible of an image part reconstructed at each step.
+The first term of the ELBO is a probabilistic analog of the reconstruction error and the second term acts as a regulariser.
+For AIR, the second term tries to keep the number of steps low, but it's also forcing the latent encoding of each image part to be as short as possible.
 
-Now, short encoding means that the model has to focus on parts of the image that can be explained with relatively few variables.
+Short encoding means that the model has to focus on parts of the image that can be explained with relatively few variables.
 It turns out that we can define an object as an image patch, where pixel correlations within that patch are strong, but the correlation between pixels inside and outside of that patch is weak.
-Also pixels belonging to two different objects have typically very low correlation.
+We can also assume that pixels belonging to two different objects have very low correlation (as long as the two objects appear independently of each other).
 That means that explaining even small parts of two different objects at the same time leads to potentially longer encoding than explaining one (potentially big) object at a time.
 This leads, at least in case of uncomplicated backgrounds as in the paper, to a  model which learns to take the minimum number of steps possible, where every step explains an internally-consistent part of the image.
 
@@ -83,7 +85,7 @@ $$\begin{align}
     h^{i+1} = RNN(v, h^i, z^i),
 \end{align}$$
 
-where $$z^i = (z^i_{what}, z^i_{where}, z^i_{pres})$$ are the latent variables describing the appearance, location and presence of an object, respectively.
+where $$z^i = \{z^i_{what}, z^i_{where}, z^i_{pres}\}$$ are the latent variables describing the appearance, location and presence of an object, respectively.
 * Presence & Location models: Given the hidden state $$h^i$$, they predict $$z^i_{pres}$$ and $$z^i_{where}$$.
 * Spatial Transformer: Given the location parameters $$z^i_{pres}$$, it extracts a crop of the original input image $$x^i_{att}$$. It will later place a reconstructed crop $$y^i_{att}$$ into the canvas.
 * Glimpse encoder: It encodes $$x^i_{att}$$ into a low-dimensional latent representation $$z^i_{what}$$.
@@ -134,9 +136,9 @@ $$\begin{align}
 It turns out that the expectation of this expression is equal to zero, and therefore we can add an arbitrary term with zero expectation without changing the result.
 If what we add is negatively correlated with $$\mathcal{L}$$, we will reduce variance. AIR uses "neural baselines" and cites [Neural Variational Inference and Learning in Belief Networks](https://arxiv.org/abs/1402.0030) by A. Mnih and K. Gregor, but doesn't give much detail.
 
-Do we really need to reduce variance? Well, yes. I've measured variance on a per-parameter basis for the AIR model. Back-propagation results in variance on the order of $$10^{-2}$$. There is some variance, as we'd expect from Stochastic Gradient Decent, but it's not huge. Due to discrete latent variables, gradient of some of the parameters comes only from the REINFORCE formulation, and its variance is on the order of $$10^3$$. It's 5 order of magnitude higher, and I wouldn't expect it to be very useful for training. The neural baseline reduces the variance to about $$10^{-1}$$. It's still higher than from back-prop, but usable.
+Do we really need to reduce variance? Well, yes. I've measured variance on a per-parameter basis for the AIR model. Back-propagation results in variance on the order of $$10^{-2}$$. There is some variance, as we'd expect from Stochastic Gradient Decent, but it's not huge. Due to discrete latent variables, gradient of some of the parameters comes only from the REINFORCE formulation, and its variance is on the order of $$10^3$$. It's five orders of magnitude higher, and I wouldn't expect it to be very useful for training. The neural baseline reduces the variance to about $$10^{-1}$$. It's still higher than from back-prop, but usable.
 
-I used an MLP with 2 hidden layers of 256 and 128 neurones, respectively, with a single output unit. As input I used the original flattened image concatenated with all latent variables produced by the main model. The baseline is trained to minimise the mean-squared error with the current reconstruction error ($$-\mathbb{E}_{q_\phi(z)} [\log p_\theta(x \mid z)]$$) of the main model as the target. The learning rate used for training this auxiliary model (baseline) was set 10 times higher than the learning rate of the base model.
+I used an MLP with 2 hidden layers of 256 and 128 neurones, respectively, with a single output unit. As input, I used the original flattened image concatenated with all latent variables produced by the main model. The baseline is trained to minimise the mean-squared error with the current reconstruction error ($$-\mathbb{E}_{q_\phi(z)} [\log p_\theta(x \mid z)]$$) of the main model as the target. The learning rate used for training this auxiliary model was set 10 times higher than the learning rate of the base model.
 
 To see how REINFORCE with a neural baseline is implemented, have a look at the `AIRModel._reinforce` method in [model.py](https://github.com/akosiorek/attend_infer_repeat/blob/master/attend_infer_repeat/model.py).
 
@@ -148,4 +150,4 @@ To see how REINFORCE with a neural baseline is implemented, have a look at the `
 3. It is sensitive to initialisation of the output layers that produce the final reconstruction but also of the "where" and "pres" latent variables. If the reconstruction has too big values at the beginning of the training, the number of steps shrinks to zero and the model never recovers. Similar things happen when "where" latent variable has too big a variance at the beginning. This behaviour is obvious in hindsight, but it wasn't that clear while implementing.
 
 # Conclusion
-It's a really cool if a bit complicated model. I hope this post has brought you closer to understand what's going on in the paper. I've implemented it because I have a few ideas how to use it in my research. Feel free to reach out if you have any questions or comments.
+It's a really cool if a bit complicated model. I hope this post has brought you closer to understanding of what's going on in the paper. I've implemented it because I have a few ideas on how to use it in my research. Feel free to reach out if you have any questions or comments.
