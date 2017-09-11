@@ -18,6 +18,8 @@ In my free time I train gymnastics and read lots of books.
 
 [My CV](../resources/cv_adam_kosiorek.pdf)
 
-#### Publications
+<div style="margin: 150px;"></div>
+
+#### Publications 
 ----------------
 [**A. R. Kosiorek**, A. Bewley, I. Posner, "Hierarchical Attentive Recurrent Tracking", NIPS 2017.](https://arxiv.org/abs/1706.09262) [`code`](https://github.com/akosiorek/hart)

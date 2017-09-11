@@ -1,4 +1,5 @@
 _site
+.ipynb_checkpoints
 .sass-cache
 .jekyll-metadata
 *.swp
