@@ -16,10 +16,12 @@ Normalizing flows take a simple probability distribution (here: a Gaussian) and 
 While useful, the resulting distribution is limited by the form of the transforming functions, which in this case have to be invertible.
 Another way of achieving the same goal is to split the latent variables into two groups $$z = \{u, v\}$$, say, and express the joint distribution as $$q(z) = q(u, v) = q(u \mid v) q(v)$$ by using the product rule of probability. The conditional distribution $$q(u \mid v)$$ can depend on $$v$$ in a highly non-linear fashion (it can be implemented as a neural net). Even though both the marginal $$q(v)$$ and the conditional $$q(u \mid v)$$ can be Gaussians, their joint might be highly non-Gaussian. Consider the below example and the resulting density plot (in the plot $$x=v$$ and $$y=u$$).
 
-$$\begin{aligned}
+$$\begin{align}
 q(v) &= \mathcal{N} (v \mid 0, I)\\
 q(u \mid v) &= \mathcal{N} (u \mid Fv, Fvv^TF^T + \beta I),
-\end{aligned}$$
+\tag{1}
+\label{hierarchical}
+\end{align}$$
 
 <img src="true_distrib.png" style="width: 500px; display: block; margin: auto;">
 
@@ -32,25 +34,28 @@ Kullback-Leibler divergence $$KL[q \mid p]$$ between the approximate posterior $
 
    $$
    KL[q(z) \mid \mid p(z)] = \int q(z) \log \frac{q(z)}{p(z)} \mathrm{d}z.
+   \tag{2}
+   \label{kl_def}
    $$
 
 If we split the random variable $$z$$ into two disjoint sets $$z = \{u, v\}$$ as  above, the KL factorises as
 
    $$
-   \begin{aligned}
+   \begin{align}
    KL[q(u, v) \mid \mid p(u, v)] &= \iint q(u, v) \log \frac{q(u, v)}{p(u, v)} \mathrm{d}u \mathrm{d}v\\
    % sum of integrals
    &= \int q(v) \log \frac{q(v)}{p(v)} \mathrm{d}v
-   + \int q(v) \int q(u \mid v) \log \frac{q(u \mid v)}{p(u \mid v))} \mathrm{d}u \mathrm{d}v\\
+   + \int q(v) \int q(u \mid v) \log \frac{q(u \mid v)}{p(u \mid v))} \mathrm{d}u \mathrm{d}v \tag{3}\\
    % sum of KLs
    &= KL[q(v) \mid \mid p(v)] + KL[q(u \mid v) \mid \mid p(u \mid v)],
-   \end{aligned}
+   \label{conditional_kl}
+   \end{align}
    $$
 
    where $$KL[q(u \mid v) \mid \mid p(u \mid v)] = \mathbb{E}_{q(v)} \left[ \tilde{KL}[q(u \mid v) \mid \mid p(u \mid v)] \right]$$ is known as the conditional KL-divergence, with
 
    $$
-   \tilde{KL}[q(u \mid v) \mid \mid p(u \mid v) = \int q(u \mid v) \log \frac{q(u \mid v)}{p(u \mid v))} \mathrm{d}u.
+   \tilde{KL}[q(u \mid v) \mid \mid p(u \mid v) = \int q(u \mid v) \log \frac{q(u \mid v)}{p(u \mid v))} \mathrm{d}u \tag{4}.
    $$
 
 The conditional KL-divergence amounts to the expected value of the KL-divergence between conditional distributions $$q(u \mid v)$$ and $$p(u \mid v)$$, where the expectation is taken with respect to $$q(v)$$.
@@ -59,30 +64,51 @@ KL is equal to zero only when both probability distributions are exactly equal.
 The conditional KL is equal to zero when both conditional distributions are exactly equal on the whole support defined by $$q(v)$$.
 This last bit makes it difficult to optimise with respect to the parameters of both distributions.
 
-Let $$q(z) = q_\psi(u, v) = q_\phi (u \mid v) q_\theta(v)$$, such that the posterior is parametrised by $$\psi = \{\phi, \theta\}$$. If we look at the gradient of the KL divergence, we have that
+Let $$q(z) = q_\psi(u, v) = q_\phi (u \mid v) q_\theta(v)$$, such that the posterior is parametrised by $$\psi = \begin{bmatrix} \phi\\ \theta\end{bmatrix}$$. If we look at the gradient of the KL divergence, we have that
 
 $$
-\begin{aligned}
-\nabla_\psi KL[q_\psi(u, v) \mid \mid p(u, v)] &=\\
-&= \nabla_\theta KL[q_\theta(v) \mid \mid p(v)] + \nabla_\psi KL[q_\phi(u \mid v) \mid \mid p(u \mid v)],
-\end{aligned}
+\begin{align}
+\nabla_\psi &KL[q_\psi(u, v) \mid \mid p(u, v)] = \begin{bmatrix} \nabla_\phi KL[q_\psi(u, v) \mid \mid p(u, v)] \\ \nabla_\theta KL[q_\psi(u, v) \mid \mid p(u, v)] \end{bmatrix}
+\tag{5},
+\end{align}
 $$
 
-where the last term involves gradients with respect to the parameters of the conditional distribution $$\phi$$ as well as to the parameters of its support distribution $$\theta$$. If we minimise the last term with respect to both sets of parameters, it might well be easier to change the support $$q_\phi(v)$$ to a volume where both conditionals have very small values instead of optimising $$q_\theta(u \mid v)$$. From my experience, it happens especially when the value of the conditional KL is much bigger than the value of the first KL term.
-
-An alternative approach would be to perform the optimisation of the second term only with respect to the parameters of the distribution inside the expectation: $$\phi$$. That would result in the following gradient equation:  
+with
 
 $$
-\begin{aligned}
-\nabla_\psi KL[q_\psi(u, v) \mid \mid p(u, v)] &=\\
-&= \nabla_\theta KL[q_\theta(v) \mid \mid p(v)] + \nabla_\phi KL[q_\phi(u \mid v) \mid \mid p(u \mid v)],
-\end{aligned}
+\nabla_\phi KL[q_\psi(u, v) \mid \mid p(u, v)] = \nabla_\phi KL[q_\phi(u \mid v) \mid \mid p(u \mid v)]
+\tag{6},
 $$
 
-where
+$$
+\nabla_\theta KL[q_\psi(u, v) \mid \mid p(u, v)] = \nabla_\theta KL[q_\theta(v) \mid \mid p(v)] + \nabla_\theta KL[q_\phi(u \mid v) \mid \mid p(u \mid v)],
+\tag{7}
+$$
+
+
+where the gradient with respect to the parameters of the lower-level distribution $$q_\theta(v)$$ is comprised of two components. The second component is problematic. Let's have a closer look:
 
 $$
-\nabla_\phi KL[q_\phi(u \mid v) \mid \mid p(u \mid v)] = \mathbb{E}_{q_\theta(v)} \left[ \nabla_\phi \tilde{KL}[q_\phi(u \mid v) \mid \mid p(u \mid v)] \right].
+\begin{align}
+\nabla_\theta &KL[q_\phi(u \mid v) \mid \mid p(u \mid v)] = \nabla_\theta \mathbb{E}_{q_\theta(v)} \left[
+\tilde{KL}[q_\phi (u \mid v) \mid \mid p(u \mid v) \right]
+\tag{8}\\
+&= \mathbb{E}_{q_\theta(v)} \left[
+\tilde{KL}[q_\phi (u \mid v) \mid \mid p(u \mid v)] \nabla_\theta \log q_\theta(v) \right],
+\end{align}
+$$
+
+where in the second line we used the [log-derivative trick](http://blog.shakirm.com/2015/11/machine-learning-trick-of-the-day-5-log-derivative-trick/) suggested by [Max Soelch (thanks!)](https://scholar.google.com/citations?user=MtTyY5IAAAAJ&hl=en). This score-function formulation makes it clear that the gradient points in the direction that maximises the probability of samples for which the conditional-KL divergence has the lowest values. In particular, it might be easier to change the support $$q_\phi(v)$$ to a volume where both conditionals have very small values instead of optimising $$q_\theta(u \mid v)$$. From my experience, it happens especially when the value of the conditional KL is much bigger than the value of the first KL term.
+
+An alternative approach would be to optimise the conditional-KL only with respect to the parameters of the distribution inside the expectation: $$\phi$$. That would result in the following gradient equation:  
+
+$$
+\nabla_\psi KL[q_\psi(u, v) \mid \mid p(u, v)]
+=
+\begin{bmatrix} 0\\ \nabla_\theta KL[q_\theta(v) \mid \mid p(v)] \end{bmatrix}
++
+\begin{bmatrix} \nabla_\phi KL[q_\phi(u \mid v) \mid \mid p(u \mid v)] \\ 0 \end{bmatrix}
+\tag{9}
 $$
 
 This optimisation scheme resembles the [Expectation-Maximisation (EM) algorithm](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm).
