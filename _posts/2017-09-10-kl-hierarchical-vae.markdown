@@ -98,7 +98,7 @@ $$
 \end{align}
 $$
 
-where in the second line we used the [log-derivative trick](http://blog.shakirm.com/2015/11/machine-learning-trick-of-the-day-5-log-derivative-trick/) suggested by [Max Soelch (thanks!)](https://scholar.google.com/citations?user=MtTyY5IAAAAJ&hl=en). This score-function formulation makes it clear that the gradient points in the direction that maximises the probability of samples for which the conditional-KL divergence has the lowest values. In particular, it might be easier to change the support $$q_\phi(v)$$ to a volume where both conditionals have very small values instead of optimising $$q_\theta(u \mid v)$$. From my experience, it happens especially when the value of the conditional KL is much bigger than the value of the first KL term.
+where in the second line we used the [log-derivative trick](http://blog.shakirm.com/2015/11/machine-learning-trick-of-the-day-5-log-derivative-trick/) (suggested here by [Max Soelch](https://scholar.google.com/citations?user=MtTyY5IAAAAJ&hl=en), thanks!). This score-function formulation makes it clear that following the (negative, as in SGD) gradient estimate maximises the probability of samples for which the conditional-KL divergence has the lowest values. In particular, it might be easier to change the support $$q_\theta(v)$$ to a volume where both conditionals have very small values instead of optimising $$q_\phi(u \mid v)$$. From my experience, it happens especially when the value of the conditional KL is much bigger than the value of the first KL term.
 
 An alternative approach would be to optimise the conditional-KL only with respect to the parameters of the distribution inside the expectation: $$\phi$$. That would result in the following gradient equation:  
 

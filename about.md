@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-![Adam Kosiorek](../resources/me.jpg){:style="width: 200px; float: right;"}
+![Adam Kosiorek](../resources/me.jpg){:style="width: 200px; overflow: hidden; border-radius: 50%; float: right;"}
 Hi, I'm Adam.
 I'm passionate about machine learning, particularly generative modelling.
 I'm really into time-series, attention and external memory.
@@ -20,6 +20,6 @@ In my free time I train gymnastics and read lots of books.
 
 <div style="margin: 150px;"></div>
 
-#### Publications 
+#### Publications
 ----------------
 [**A. R. Kosiorek**, A. Bewley, I. Posner, "Hierarchical Attentive Recurrent Tracking", NIPS 2017.](https://arxiv.org/abs/1706.09262) [`code`](https://github.com/akosiorek/hart)
