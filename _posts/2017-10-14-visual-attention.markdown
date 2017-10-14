@@ -70,7 +70,7 @@ The code below lets you create one of the above masks for a mini-batch of sample
 def spatial_transformer(img_tensor, transform_params, img_size, crop_size):
   constraints = snt.AffineWarpConstraints.no_shear_2d()
   warper = snt.AffineGridWarper(img_size, crop_size, constraints)
-  grid_coords = self._warper(transform_params)
+  grid_coords = warper(transform_params)
   glimpse = snt.resampler(img_tensor, grid_coords)
   return glimpse
 ```
