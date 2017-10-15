@@ -18,7 +18,7 @@ Informally, a neural attention mechanism equips a neural network with the abilit
   \end{align}
   $$
 
-where $$\odot$$ is the Hadamard product.
+where $$\odot$$ is element-wise multiplication.
 We can talk about *soft attention*, which multiplies features with a (soft) mask of values between zero and one, or *hard attention*, when those values are constrained to be exactly zero or one, namely $$\mathbf{a} \in \{0, 1\}^k$$. In the latter case, we can use the hard attention mask to directly index the feature vector: $$\mathbf{z}_a = \mathbf{z}[\mathbf{a}]$$ (in Matlab notation), which changes its dimensionality.
 
 To understand why attention is important, we have to think about what a neural network really is: a function approximator. Its ability to approximate different classes of functions depends on its architecture. A typical neural net is implemented as a chain of matrix multiplications and element-wise non-linearities, where elements of the input or feature vectors interact with each other only by addition.
