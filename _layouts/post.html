@@ -11,9 +11,10 @@ layout: default
   <div class="post-content" itemprop="articleBody">
     {{ content }}
   </div>
-
+  {% include share.html %}
+  <div style="padding: 20px;"></div>
   {% if page.comments %}
-    {% include comments.html %}    
-  {% endif %} 
+    {% include comments.html %}
+  {% endif %}
 
 </article>
