@@ -191,7 +191,7 @@ gaussian_crop = sess.run(gaussian_glimpse_expr, feed_dict={tx: x, tu: u, ts: s, 
 # extract STN glimpse
 transform = [.4, -.1, .4, -.1]
 transform = np.asarray(transform).reshape((1, 4))
-stn_crop = sess.run(stn_glimpse, {tx: x, stn_params: transform})
+stn_crop = sess.run(stn_glimpse_expr, {tx: x, stn_params: transform})
 
 
 # plots
