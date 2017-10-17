@@ -207,6 +207,8 @@ for ax, title, img in zip(axes, titles, imgs):
 ```
 ![Attention Examples](attention_example.png)
 
+You can find a Jupyter Notebook with the code used to create the above [here](https://github.com/akosiorek/akosiorek.github.io/tree/master/notebooks/attention_glimpse.ipynb)
+
 
 # Closing Thoughts
 Attention mechanisms expand capabilities of neural networks: they allow approximating more complicated functions, or in more intuitive terms, they enable focusing on specific parts of the input. They have led to performance improvements in natural language benchmarks, as well as to entirely new capabilities such as image captioning, addressing in memory networks and neural programmers.
