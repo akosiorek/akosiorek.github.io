@@ -22,7 +22,9 @@ In my free time I train gymnastics and read lots of books.
 
 #### Publications
 ----------------
-[**A. R. Kosiorek**, A. Bewley, I. Posner, "Hierarchical Attentive Recurrent Tracking", NIPS 2017.](https://arxiv.org/abs/1706.09262) [`code`](https://github.com/akosiorek/hart)
+[**A. R. Kosiorek**, A. Bewley, I. Posner, "Hierarchical Attentive Recurrent Tracking", _NIPS_, 2017.](https://arxiv.org/abs/1706.09262) [`code`](https://github.com/akosiorek/hart)
+
+[Neil Dhir, **A. R. Kosiorek**, I. Posner, "Bayesian Delay Embeddings for Dynamical Systems", _NIPS Timeseries Workshop_, 2017.](http://www.robots.ox.ac.uk/~mobile/Papers/2017NIPS_dhir.pdf)
 
 <div style="margin: 50px;"></div>
 #### Projects
