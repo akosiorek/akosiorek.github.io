@@ -22,6 +22,8 @@ In my free time I train gymnastics and read lots of books.
 
 #### Publications
 ----------------
+[T. Rainforth, **A. R. Kosiorek**, T. A. Le, C. J. Maddison, M. Igl, F. Wood, Y. W. Teh, "Tighter Variational Bounds are Not Necessarily Better", _CoRR_, 2018](https://arxiv.org/abs/1802.04537)
+
 [**A. R. Kosiorek**, A. Bewley, I. Posner, "Hierarchical Attentive Recurrent Tracking", _NIPS_, 2017.](https://arxiv.org/abs/1706.09262) [`code`](https://github.com/akosiorek/hart)
 
 [Neil Dhir, **A. R. Kosiorek**, I. Posner, "Bayesian Delay Embeddings for Dynamical Systems", _NIPS Timeseries Workshop_, 2017.](http://www.robots.ox.ac.uk/~mobile/Papers/2017NIPS_dhir.pdf)
