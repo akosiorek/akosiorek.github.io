@@ -17,6 +17,9 @@ collections:
     drafts:
         output: true
         permalink: /:collection/:name/
+    notes:
+        output: true
+        permalink: /:collection/:name/
 
 defaults:
   -
