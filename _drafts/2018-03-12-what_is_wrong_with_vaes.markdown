@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: draft
 title:  "What is wrong with VAEs?"
 date:   2018-03-01 15:15:0 +0000
 comments: True

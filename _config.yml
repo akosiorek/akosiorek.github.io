@@ -12,6 +12,21 @@ description: > # this means to ignore newlines until "baseurl:"
   Generative timeseries modelling, but also attention, memory and other cool tricks.
 #baseurl: "" # the subpath of your site, e.g. /blog
 #url: "http://yourdomain.com" # the base hostname & protocol for your site
+
+collections:
+    drafts:
+        output: true
+        permalink: /:collection/:name/
+
+defaults:
+  -
+    scope:
+      path: ""
+      type: drafts
+    values:
+      layout: draft
+
+
 #twitter_username: jekyllrb
 github_username:  akosiorek
 linkedin_username: adamkosiorek
