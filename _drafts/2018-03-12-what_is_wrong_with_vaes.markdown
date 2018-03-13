@@ -85,14 +85,14 @@ $$
     }, \qquad \mathbf{z} \sim q_\phi (\mathbf{z} \mid \mathbf{x}). \tag{7}
 $$
 
-By maximising the $$ELBO$$, we (1) maximise the marginal probability, and/or (2) minimise the KL-divergence.
+By maximising the $$ELBO$$, we (1) maximise the marginal probability or (2) minimise the KL-divergence, or both.
 It is worth noting that the $$ELBO$$ has the form of importance-sampled expectation of $$f(\mathbf{x}) = 1$$, with importance weights $$w(\mathbf{x}) = \frac{ p_\theta (\mathbf{x}, \mathbf{z}) }{ q_\phi (\mathbf{z} \mid \mathbf{x})}$$.
 
 # What is wrong with this estimate?
 If you look long enough at importance sampling, it becomes apparent that the support of the proposal distribution should be wider than that of the nominal pdf - both to avoid infinite variance of the estimator and numerical instabilities.
 In this case, it would be better to optimise the reverse $$KL(p \mid\mid q)$$, which has mode-averaging behaviour, as opposed to  $$KL(q \mid\mid p)$$, which tries to match the mode of $$q$$ to one of the modes of $$p$$.
 This would typically require taking samples from the true posterior, which is hard.
-Instead, we can use IS estimate of the $$ELBO$$, introduced in the excellent [IWAE paper](https://arxiv.org/abs/1509.00519), with a higher number $$K$$ of particles:
+Instead, we can use IS estimate of the $$ELBO$$, introduced as [Importance Weighted Autoencoder](https://arxiv.org/abs/1509.00519) (*IWAE*), with a higher number $$K$$ of particles:
 
 $$
   \mathcal{L}_K (\mathbf{x}; \theta, \phi) \approx
@@ -126,29 +126,40 @@ It also leads to higher-entropy estimates of the approximate posterior $$q$$, ef
 As a curious consequence, if we increase the number of particles $$K$$ to infinity, we no longer need the inference model $$q$$.
 
 # What is wrong with IWAE?
-The importance-weighted ELBO, or the IWAE changes with the number of particles $$K$$ used to estimate it.
-The higher the number of particles, the tighter (closer to the true log likelihood) the bound is.
-This means that the gradient estimator derived by differentiating the IWAE points us in a better direction.
+The importance-weighted ELBO, or the IWAE, changes with the number of particles $$K$$ used to estimate it.
+The higher the number of particles, the tighter (closer to the true log-probability) the bound is.
+This means that the gradient estimator, derived by differentiating the IWAE, points us in a better direction.
 Additionally, the variance of that gradient estimator shrinks.
-However, the behaviour is slightly different from the generative and the inference model.
-For the latter, it turns out, the norm of the gradient goes to zero.
-It is not a problem itself; but it is problematic that it does so faster than its variance.
-If we define signal-to-noise ratio (SNR) as...
 
-It turns out that SNR converges with $$K$$ as ... for q and ... for p.
+It is great for the generative model, but it turns out to be problematic for the proposal.
+The magnitude of the gradient with respect to proposal parameters goes to zero, and it does so much faster than its variance.  
+
+
+Let $$\Delta (\psi )$$ be update of parameter $$\psi$$ proportional to the gradient (with respect to that parameter) of an objective we're optimising (*e.g.* $$ELBO$$). If we define signal-to-noise ratio (SNR) of the parameter update as
+
+$$
+  SNR(\psi) = \left| \frac{
+      \mathbb{E} \left[ \Delta (\psi ) \right]
+    }{
+      \left( \text{Var} \left[ \Delta (\psi ) \right] \right)^{\frac{1}{2}}
+      } \right|,
+$$
+
+it turns out that SNR increases with $$K$$ for $$p_\theta$$, but it decreases for $$q_\phi$$.
 The conclusion here is simple: the more particles we use, the worse the inference model becomes.
 If we care about representation learning, we have a problem.
 
 <figure>
   <img src="{{site.url}}/resources/snr_encoder.png" alt="Signal-to-Noise ratio for the encoder across training epochs"/>
-  <figcaption align='center'>Signal-to-Noise ratio for the encoder across training epochs for different training objectives.</figcaption>
+  <figcaption align='center'>Signal-to-Noise ratio for the proposal across training epochs for different training objectives.</figcaption>
 </figure>
 
 # Better solution
-We can do better than IWAE, as we've shown in [our recent paper](https://arxiv.org/abs/1802.04537).
+We can do better than the IWAE, as we've shown in [our recent paper](https://arxiv.org/abs/1802.04537).
 The idea is to use separate objectives for the inference and the generative models.
-By doing so, we can ensure that both get non-zero low-variance gradients, which leads to better models.
-As a perhaps surprising side effect, our new estimators achieve higher IWAE-64 bounds than the IWAE itself.
+By doing so, we can ensure that both get non-zero low-variance gradients, which lead to better models.
+As a, perhaps surprising, side effect, models trained with our new estimators achieve higher $$IWAE$$-$$64$$ bounds than the IWAE itself.
 Why?
-By looking at the effective sample-size (ESS), it looks like the VAE produces best proposals, but the worst generative models.
+By looking at the [effective sample-size (ESS)](https://en.wikipedia.org/wiki/Effective_sample_size) and the marginal log probability of data, it looks like optimising the VAE $$ELBO$$ leads to producing the best quality proposals, but the worst generative models.
 If we combine a good proposal with an objective that leads to good generative models, we should be able to provide lower-variance estimate of this objective and thus learn even better models.
+Please see [our paper](https://arxiv.org/abs/1802.04537) for details.
