@@ -151,6 +151,13 @@ Optimising this lower bound leads to better generative models, as shown in the o
 It also leads to higher-entropy (wider, more scattered) estimates of the approximate posterior $$q$$, effectively breaking the mode-matching behaviour of the original KL-divergence.
 As a curious consequence, if we increase the number of particles $$K$$ to infinity, we no longer need the inference model $$q$$.
 
+<figure>
+  <img style="display: box; margin: auto" src="{{site.url}}/resources/iwae_vs_vae.png" alt="IWAE vs VAE"/>
+  <figcaption align='center'>
+    Posterior distribution of <b>z</b> for the IWAE (top row) and VAE (bottom row). Figure reproduced from the <a href="https://arxiv.org/abs/1509.00519">IWAE paper</a>.
+  </figcaption>
+</figure>
+
 # What is wrong with IWAE?
 The importance-weighted *ELBO*, or the *IWAE*, generalises the original *ELBO*: for $$K=1$$, we have $$\mathcal{L}_K = \mathcal{L}_1 = \mathcal{L}$$.
 It is also true that $$\log p(\mathbf{x}) \geq \mathcal{L}_{n+1} \geq \mathcal{L}_n \geq \mathcal{L}_1$$.
