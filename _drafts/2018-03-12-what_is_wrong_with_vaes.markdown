@@ -5,6 +5,7 @@ date:   2018-03-01 15:15:0 +0000
 categories: ML
 ---
 
+# Latent Variable Models
 Suppose you would like to model the world in terms of the probability distribution over its possible states $$p(\mathbf{x})$$ with $$\mathbf{x} \in \mathcal{R}^D$$.
 The world may be complicated and we do not know what form $$p(\mathbf{x})$$ should have.
 To account for it, we introduce another variable $$\mathbf{z} \in \mathcal{R}^d$$, which describes, or explains the content of $$\mathbf{x}$$.
@@ -14,12 +15,13 @@ This new variable allows us to express $$p(\mathbf{x})$$ as an infinite mixture 
 $$
   p(\mathbf{x}) = \int p(\mathbf{x} \mid \mathbf{z}) p(\mathbf{z})~d \mathbf{z}. \tag{1}
 $$
+
 It is a mixture model, because for every possible value of $$\mathbf{z}$$, we add another conditional distribution to $$p(\mathbf{x})$$, weighted by its probability.
 
 Having a setup like that, it is interesting to ask what the latent variables $$\mathbf{z}$$ are, given an observation $$\mathbf{x}$$.
 Namely, we would like to know the posterior distribution $$p(\mathbf{z} \mid \mathbf{x})$$.
-However, the relationship between $$\mathbf{z}$$ and $$\mathbf{x}$$ can be highly non-linear (*e.g.* implemented by a multi-layer neural network) and both $$D$$ and $$d$$ can be quite large.
-Since both marginal and posterior probability distributions require evaluation of eq. 1, they are intractable.
+However, the relationship between $$\mathbf{z}$$ and $$\mathbf{x}$$ can be highly non-linear (*e.g.* implemented by a multi-layer neural network) and both $$D$$, the dimensionality of our observations, and $$d$$, the dimensionality of the latent variable, can be quite large.
+Since both marginal and posterior probability distributions require evaluation of eq. (1), they are intractable.
 
 To train a probabilistic model, we can use a parametric distribution - parametrised by a neural network with parameters $$\theta \in \Theta$$.
 We can now learn the parameters by maximum likelihood estimation,
@@ -29,9 +31,10 @@ $$
 $$
 
 The problem is, we can't evaluate this expression due to the non-linearities and high dimensionality of both $$\mathbf{x}$$- and $$\mathbf{z}$$-space.
-We could approximate it by Monte-Carlo sampling, but since the volume of z-space is potentially large, we would need millions of samples $$\mathbf{z} \sim p(\mathbf{z})$$ to get a reliable estimate.
+We could approximate it by Monte-Carlo sampling, but since the volume of $$\mathbf{z}$$-space is potentially large, we would need millions of samples $$\mathbf{z} \sim p(\mathbf{z})$$ to get a reliable estimate.
 To improve things, we can resort to [importance sampling (IS)](https://en.wikipedia.org/wiki/Importance_sampling).
-IS allows us to sample from a different probability distribution (*proposal distribution*) and use weighted samples, where weighting is with respect to the original (*nominal*) probability density function (pdf), to evaluate expectations.
+When we need to evaluate an expectation with respect to the original (*nominal*) probability density function (*pdf*), IS allows us to sample from a different probability distribution (*proposal*) and then weigh those samples with respect to the nominal pdf.
+Let $$q_\phi ( \mathbf{z} \mid \mathbf{x})$$ be a probability distribution parametrised by a neural network with parameters $$\phi \in \Phi$$.
 We can write
 
 $$
@@ -41,11 +44,20 @@ $$
   \mathbb{E}_{q_\phi ( \mathbf{z} \mid \mathbf{x})} \left[ \frac{p_\theta (\mathbf{x} \mid \mathbf{z} ) p(\mathbf{z})}{q_\phi ( \mathbf{z} \mid \mathbf{x})} )\right]. \tag{3}
 $$
 
+
 From [importance sampling literature](http://statweb.stanford.edu/~owen/mc/Ch-var-is.pdf) we know that the optimal proposal is proportional to the nominal pdf times the function, whose expectation we are trying to approximate.
 In our setting, that function is just $$p_\theta (\mathbf{x} \mid \mathbf{z} )$$.
-From Bayes' theorem, we see that the optimal proposal is proportional to the posterior distribution, which is of course intractable.
+From Bayes' theorem, $$p(z \mid x) = \frac{p(x \mid z) p (z)}{p(x)}$$, we see that the optimal proposal is proportional to the posterior distribution, which is of course intractable.
+
+# Raise of a Variational Autoencoder
 Fortunately, it turns out, we can kill two birds with one stone:
 by trying to approximate the posterior with a learned proposal, we can efficiently approximate the marginal probability $$p_\theta(\mathbf{x})$$.
+A bit by accident, we have just arrived at an autoencoding setup. To learn our model, we need
+
+  * $$p_\theta ( \mathbf{x}, \mathbf{z})$$ - the generative model, which consists of
+    * $$p_\theta ( \mathbf{x} \mid \mathbf{z})$$ - a probabilistic encoder, and
+    * $$p ( \mathbf{z})$$                        - a prior over the latent variables,
+  * $$q_\phi ( \mathbf{z} \mid \mathbf{x})$$   - a probabilistic encoder.           
 
 To approximate the posterior, we can use the [KL-divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence) (think of it as a distance between probability distributions) between the proposal and the posterior itself; and we can minimise it.
 
@@ -53,18 +65,18 @@ $$
   KL \left( q_\phi (\mathbf{z} \mid \mathbf{x}) || p(\mathbf{z} \mid \mathbf{x}) \right) = \mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log \frac{q_\phi (\mathbf{z} \mid \mathbf{x})}{p_\theta(\mathbf{z} \mid \mathbf{x})} \right] \tag{4}
 $$
 
-Our new problem, of course, is that to evaluate the *KL* we need to know the posterior distribution.
+Our new problem is, of course, that to evaluate the *KL* we need to know the posterior distribution.
 Not all is lost, for doing a little algebra can give us an objective function that is possible to compute.
 
 $$
-  \mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log \frac{q_\phi (\mathbf{z} \mid \mathbf{x})}{p_\theta(\mathbf{z} \mid \mathbf{x})} \right] =
+  KL \left( q_\phi (\mathbf{z} \mid \mathbf{x}) || p(\mathbf{z} \mid \mathbf{x}) \right) =\\
   \mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log q_\phi (\mathbf{z} \mid \mathbf{x}) - \log p_\theta(\mathbf{z} \mid \mathbf{x}) \right] = \\
-  \mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log q_\phi (\mathbf{z} \mid \mathbf{x}) - \log p_\theta(\mathbf{z}, \mathbf{x}) \right] - \log p_\theta(\mathbf{x}) =
+  \mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log q_\phi (\mathbf{z} \mid \mathbf{x}) - \log p_\theta(\mathbf{z}, \mathbf{x}) \right] - \log p_\theta(\mathbf{x}) =\\
   \mathcal{L} (\mathbf{x}; \theta, \phi) - \log p_\theta(\mathbf{x})
   \tag{5}
 $$
 
-Where on the second line I used the Bayes' theorem, and $$\mathcal{L} (\mathbf{x}; \theta, \phi)$$ is the evidence-lower bound (*ELBO*). We can rewrite it as
+Where on the second line I expanded the logarithm, on the third line I used the Bayes' theorem and the fact that $$p_\theta (\mathbf{x})$$ is independent of $$\mathbf{z}$$. $$\mathcal{L} (\mathbf{x}; \theta, \phi)$$ in the last line is a lower bound on the log probability of data $$p_\theta (\mathbf{x})$$ - the so-called evidence-lower bound (*ELBO*). We can rewrite it as
 
 $$
   \log p_\theta(\mathbf{x}) = \mathcal{L} (\mathbf{x}; \theta, \phi) - KL \left( q_\phi (\mathbf{z} \mid \mathbf{x}) || p_\theta(\mathbf{z} \mid \mathbf{x}) \right), \tag{6}
@@ -78,12 +90,24 @@ $$
       }{
         q_\phi (\mathbf{z} \mid \mathbf{x})
       }
-    \right]\\
-    \approx  \log \frac{
+    \right]. \tag{7}
+$$
+
+We can approximate it using a single sample from the proposal distribution as
+
+$$
+    \mathcal{L} (\mathbf{x}; \theta, \phi) \approx  \log \frac{
       p_\theta (\mathbf{x}, \mathbf{z})
     }{
       q_\phi (\mathbf{z} \mid \mathbf{x})
-    }, \qquad \mathbf{z} \sim q_\phi (\mathbf{z} \mid \mathbf{x}). \tag{7}
+    }, \qquad \mathbf{z} \sim q_\phi (\mathbf{z} \mid \mathbf{x}).
+$$
+
+We train the model by finding $$\phi$$ and $$\theta$$ (usually by stochastic gradient descent) that maximise the *ELBO*:
+
+$$
+  \phi^\star,~\theta^\star = \arg \max_{\phi \in \Phi,~\theta \in \Theta}
+  \mathcal{L} (\mathbf{x}; \theta, \phi).
 $$
 
 By maximising the *ELBO*, we (1) maximise the marginal probability or (2) minimise the KL-divergence, or both.
