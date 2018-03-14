@@ -188,7 +188,7 @@ The idea is to use separate objectives for the inference and the generative mode
 By doing so, we can ensure that both get non-zero low-variance gradients, which lead to better models.
 
 <figure>
-  <img src="{{site.url}}/resources/snr_encoder.png" alt="Signal-to-Noise ratio for the encoder across training epochs"/>
+  <img style="display: box; margin: auto" src="{{site.url}}/resources/snr_encoder.png" alt="Signal-to-Noise ratio for the encoder across training epochs"/>
   <figcaption align='center'>Signal-to-Noise ratio for the proposal across training epochs for different training objectives.</figcaption>
 </figure>
 
@@ -200,5 +200,10 @@ By looking at the [effective sample-size (ESS)](https://en.wikipedia.org/wiki/Ef
 If we combine a good proposal with an objective that leads to good generative models, we should be able to provide lower-variance estimate of this objective and thus learn even better models.
 Please see [our paper](https://arxiv.org/abs/1802.04537) for details.
 
-<!-- ### Acknowledgements
-I would like to thank Neil Dhir for proofreading this post. -->
+# Further Reading
+* More flexible proposals: Normalizing Flows tutorial by Eric Jang [part 1](https://blog.evjang.com/2018/01/nf1.html) and [part 2](https://blog.evjang.com/2018/01/nf2.html)
+* More flexible likelihood function: A post on [Pixel CNN by Sergei Turukin](http://sergeiturukin.com/2017/02/22/pixelcnn.html)
+* Extension of IWAE to sequences: [C. J. Maddison *et. al.*, "FIVO"](https://arxiv.org/abs/1705.09279) and [T. L. Le *et. al.*, "AESMC"](https://arxiv.org/abs/1705.10306)
+
+<!-- #### Acknowledgements
+I would like to thank [Tom Rainforth](http://www.robots.ox.ac.uk/~twgr/) for including me in this project as well as [Neil Dhir](http://www.robots.ox.ac.uk/~neild/) and [Anton Troynikov](http://troynikov.io/) for proofreading this post. -->
