@@ -100,14 +100,14 @@ $$
       p_\theta (\mathbf{x}, \mathbf{z})
     }{
       q_\phi (\mathbf{z} \mid \mathbf{x})
-    }, \qquad \mathbf{z} \sim q_\phi (\mathbf{z} \mid \mathbf{x}).
+    }, \qquad \mathbf{z} \sim q_\phi (\mathbf{z} \mid \mathbf{x}). \tag{8}
 $$
 
 We train the model by finding $$\phi$$ and $$\theta$$ (usually by stochastic gradient descent) that maximise the *ELBO*:
 
 $$
   \phi^\star,~\theta^\star = \arg \max_{\phi \in \Phi,~\theta \in \Theta}
-  \mathcal{L} (\mathbf{x}; \theta, \phi).
+  \mathcal{L} (\mathbf{x}; \theta, \phi). \tag{9}
 $$
 
 By maximising the *ELBO*, we (1) maximise the marginal probability or (2) minimise the KL-divergence, or both.
@@ -127,12 +127,12 @@ $$
       }{
         q_\phi (\mathbf{z^{(k)}} \mid \mathbf{x})
       },
-      \qquad \mathbf{z}^{(k)} \sim q_\phi (\mathbf{z} \mid \mathbf{x}). \tag{8}
+      \qquad \mathbf{z}^{(k)} \sim q_\phi (\mathbf{z} \mid \mathbf{x}). \tag{10}
 $$
 
 This estimator [has been shown](https://arxiv.org/abs/1705.10306) to optimise the modified KL-divergence $$KL(q^{IS} \mid \mid p^{IS})$$, with $$q^{IS}$$ and $$p^{IS}$$ defined as
 $$
-  q^{IS} = q^{IS}_\phi (\mathbf{z} \mid \mathbf{x}) = \frac{1}{K} \prod_{k=1}^K q_\phi ( \mathbf{z}^{(k)} \mid \mathbf{x} ), \tag{9}
+  q^{IS} = q^{IS}_\phi (\mathbf{z} \mid \mathbf{x}) = \frac{1}{K} \prod_{k=1}^K q_\phi ( \mathbf{z}^{(k)} \mid \mathbf{x} ), \tag{11}
 $$
 
 $$
@@ -143,7 +143,7 @@ $$
       q_\phi (\mathbf{z^{(k)}} \mid \mathbf{x})
     }
     p_\theta (\mathbf{z}^{(k)} \mid \mathbf{x}).
-  \tag{10}
+  \tag{12}
 $$
 
 While similar to the original distributions, $$q^{IS}$$ and $$p^{IS}$$ allow small variations in $$q$$ and $$p$$ that we would not have expected.
@@ -175,7 +175,7 @@ $$
       \left| \mathbb{E} \left[ \Delta (\psi ) \right] \right|
     }{
       \mathbb{V} \left[ \Delta (\psi ) \right]^{\frac{1}{2}}
-      },
+      }, \tag{13}
 $$
 
 where $$\mathbb{E}$$ and $$\mathbb{V}$$ are expectation and variance, respectively, it turns out that SNR increases with $$K$$ for $$p_\theta$$, but it decreases for $$q_\phi$$.
@@ -200,5 +200,5 @@ By looking at the [effective sample-size (ESS)](https://en.wikipedia.org/wiki/Ef
 If we combine a good proposal with an objective that leads to good generative models, we should be able to provide lower-variance estimate of this objective and thus learn even better models.
 Please see [our paper](https://arxiv.org/abs/1802.04537) for details.
 
-### Acknowledgements
-I would like to thank Neil Dhir for proofreading this post.
+<!-- ### Acknowledgements
+I would like to thank Neil Dhir for proofreading this post. -->
