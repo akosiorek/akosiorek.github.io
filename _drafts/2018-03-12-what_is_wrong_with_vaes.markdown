@@ -32,9 +32,6 @@ $$
   \theta^\star = \arg \max_{\theta \in \Theta} p_\theta(\mathbf{x}). \tag{2}
 $$
 
-<!-- The problem is, we can't evaluate this expression due to the non-linearities and high dimensionality of both $$\mathbf{x}$$- and $$\mathbf{z}$$-space.
-We could approximate it by Monte-Carlo sampling, but since the volume of $$\mathbf{z}$$-space is potentially large, we would need millions of samples $$\mathbf{z} \sim p(\mathbf{z})$$ to get a reliable estimate. -->
-
 The problem is, we cannot maximise an expression (eq. (1)), which we can't even evaluate.
 To improve things, we can resort to [importance sampling (IS)](https://en.wikipedia.org/wiki/Importance_sampling).
 When we need to evaluate an expectation with respect to the original (*nominal*) probability density function (*pdf*), IS allows us to sample from a different probability distribution (*proposal*) and then weigh those samples with respect to the nominal pdf.
@@ -59,7 +56,7 @@ by trying to approximate the posterior with a learned proposal, we can efficient
 A bit by accident, we have just arrived at an autoencoding setup. To learn our model, we need
 
   * $$p_\theta ( \mathbf{x}, \mathbf{z})$$ - the generative model, which consists of
-    * $$p_\theta ( \mathbf{x} \mid \mathbf{z})$$ - a probabilistic encoder, and
+    * $$p_\theta ( \mathbf{x} \mid \mathbf{z})$$ - a probabilistic decoder, and
     * $$p ( \mathbf{z})$$                        - a prior over the latent variables,
   * $$q_\phi ( \mathbf{z} \mid \mathbf{x})$$   - a probabilistic encoder.           
 
