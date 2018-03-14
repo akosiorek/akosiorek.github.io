@@ -3,6 +3,7 @@ layout: post
 title:  "Conditional KL-divergence in Hierarchical VAEs"
 date:   2017-09-10 14:57:00 +0100
 comments: True
+share: True
 categories: ML
 ---
 

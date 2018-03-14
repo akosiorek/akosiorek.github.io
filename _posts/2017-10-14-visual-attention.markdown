@@ -3,6 +3,7 @@ layout: post
 title:  "Attention in Neural Networks and How to Use It"
 date:   2017-10-14 12:00:00 +0100
 comments: True
+share: True
 categories: ML
 ---
 
