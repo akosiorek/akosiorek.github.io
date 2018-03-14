@@ -173,9 +173,9 @@ Let $$\Delta (\phi)$$ be a minibatch estimate of the gradient of an objective fu
 
 $$
   SNR(\phi) = \frac{
-      \left| \mathbb{E} \left[ \Delta (\psi ) \right] \right|
+      \left| \mathbb{E} \left[ \Delta (\phi ) \right] \right|
     }{
-      \mathbb{V} \left[ \Delta (\psi ) \right]^{\frac{1}{2}}
+      \mathbb{V} \left[ \Delta (\phi ) \right]^{\frac{1}{2}}
       }, \tag{13}
 $$
 
