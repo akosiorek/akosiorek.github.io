@@ -21,7 +21,9 @@ It is a mixture model, because for every possible value of $$\mathbf{z}$$, we ad
 Having a setup like that, it is interesting to ask what the latent variables $$\mathbf{z}$$ are, given an observation $$\mathbf{x}$$.
 Namely, we would like to know the posterior distribution $$p(\mathbf{z} \mid \mathbf{x})$$.
 However, the relationship between $$\mathbf{z}$$ and $$\mathbf{x}$$ can be highly non-linear (*e.g.* implemented by a multi-layer neural network) and both $$D$$, the dimensionality of our observations, and $$d$$, the dimensionality of the latent variable, can be quite large.
-Since both marginal and posterior probability distributions require evaluation of eq. (1), they are intractable.
+Since both marginal and posterior probability distributions require evaluation of the integral in eq. (1), they are intractable.
+
+We could try to approximate eq. (1) by Monte-Carlo sampling as $$p(\mathbf{x}) \approx \frac{1}{M} \sum_{m=1}^M p(\mathbf{x} \mid \mathbf{z}^{(m)})$$, $$\mathbf{z}^{(m)} \sim p(\mathbf{z})$$, but since the volume of $$\mathbf{z}$$-space is potentially large, we would need millions of samples of $$\mathbf{z}$$ to get a reliable estimate.
 
 To train a probabilistic model, we can use a parametric distribution - parametrised by a neural network with parameters $$\theta \in \Theta$$.
 We can now learn the parameters by maximum likelihood estimation,
@@ -30,11 +32,13 @@ $$
   \theta^\star = \arg \max_{\theta \in \Theta} p_\theta(\mathbf{x}). \tag{2}
 $$
 
-The problem is, we can't evaluate this expression due to the non-linearities and high dimensionality of both $$\mathbf{x}$$- and $$\mathbf{z}$$-space.
-We could approximate it by Monte-Carlo sampling, but since the volume of $$\mathbf{z}$$-space is potentially large, we would need millions of samples $$\mathbf{z} \sim p(\mathbf{z})$$ to get a reliable estimate.
+<!-- The problem is, we can't evaluate this expression due to the non-linearities and high dimensionality of both $$\mathbf{x}$$- and $$\mathbf{z}$$-space.
+We could approximate it by Monte-Carlo sampling, but since the volume of $$\mathbf{z}$$-space is potentially large, we would need millions of samples $$\mathbf{z} \sim p(\mathbf{z})$$ to get a reliable estimate. -->
+
+The problem is, we cannot maximise an expression (eq. (1)), which we can't even evaluate.
 To improve things, we can resort to [importance sampling (IS)](https://en.wikipedia.org/wiki/Importance_sampling).
 When we need to evaluate an expectation with respect to the original (*nominal*) probability density function (*pdf*), IS allows us to sample from a different probability distribution (*proposal*) and then weigh those samples with respect to the nominal pdf.
-Let $$q_\phi ( \mathbf{z} \mid \mathbf{x})$$ be a probability distribution parametrised by a neural network with parameters $$\phi \in \Phi$$.
+Let $$q_\phi ( \mathbf{z} \mid \mathbf{x})$$ be our proposal - a probability distribution parametrised by a neural network with parameters $$\phi \in \Phi$$.
 We can write
 
 $$
@@ -111,7 +115,7 @@ $$
 $$
 
 By maximising the *ELBO*, we (1) maximise the marginal probability or (2) minimise the KL-divergence, or both.
-It is worth noting that the *ELBO* has the form of importance-sampled expectation of $$f(\mathbf{x}) = 1$$, with importance weights $$w(\mathbf{x}) = \frac{ p_\theta (\mathbf{x}, \mathbf{z}) }{ q_\phi (\mathbf{z} \mid \mathbf{x})}$$.
+It is worth noting that the approximation of *ELBO* has the form of the log of importance-sampled expectation of $$f(\mathbf{x}) = 1$$, with importance weights $$w(\mathbf{x}) = \frac{ p_\theta (\mathbf{x}, \mathbf{z}) }{ q_\phi (\mathbf{z} \mid \mathbf{x})}$$.
 
 # What is wrong with this estimate?
 If you look long enough at importance sampling, it becomes apparent that the support of the proposal distribution should be wider than that of the nominal pdf - both to avoid infinite variance of the estimator and numerical instabilities.
@@ -192,7 +196,7 @@ By doing so, we can ensure that both get non-zero low-variance gradients, which 
   <figcaption align='center'>Signal-to-Noise ratio for the proposal across training epochs for different training objectives.</figcaption>
 </figure>
 
-In the above plot, we compare *SNR* of the updates of parameters $$\phi$$ of the proposal $$q_\phi$$ acorss training epochs. *VAE*, which shows the highest *SNR*, is trained by optimising $$\mathcal{L}_1$$. *IWAE*, trained with $$\mathcal{L}_{64}$$, has the lowest *SNR*. The three curves in between use different combinations of $$\mathcal{L}_{64}$$ for the generative model and $$\mathcal{L}_8$$ for the inference model. While not as good as the *VAE* under this metric, they all lead to training better proposals and generative models than either *VAE* or *IWAE*.
+In the above plot, we compare *SNR* of the updates of parameters $$\phi$$ of the proposal $$q_\phi$$ acorss training epochs. *VAE*, which shows the highest *SNR*, is trained by optimising $$\mathcal{L}_1$$. *IWAE*, trained with $$\mathcal{L}_{64}$$, has the lowest *SNR*. The three curves in between use different combinations of $$\mathcal{L}_{64}$$ for the generative model and $$\mathcal{L}_8$$ or $$\mathcal{L}_1$$ for the inference model. While not as good as the *VAE* under this metric, they all lead to training better proposals and generative models than either *VAE* or *IWAE*.
 
 As a, perhaps surprising, side effect, models trained with our new estimators achieve higher $$\mathcal{L}_{64}$$ bounds than the IWAE itself trained with this objective.
 Why?
@@ -203,7 +207,7 @@ Please see [our paper](https://arxiv.org/abs/1802.04537) for details.
 # Further Reading
 * More flexible proposals: Normalizing Flows tutorial by Eric Jang [part 1](https://blog.evjang.com/2018/01/nf1.html) and [part 2](https://blog.evjang.com/2018/01/nf2.html)
 * More flexible likelihood function: A post on [Pixel CNN by Sergei Turukin](http://sergeiturukin.com/2017/02/22/pixelcnn.html)
-* Extension of IWAE to sequences: [C. J. Maddison *et. al.*, "FIVO"](https://arxiv.org/abs/1705.09279) and [T. L. Le *et. al.*, "AESMC"](https://arxiv.org/abs/1705.10306)
+* Extension of IWAE to sequences: [Chris Maddison *et. al.*, "FIVO"](https://arxiv.org/abs/1705.09279) and [Tuan Anh Le *et. al.*, "AESMC"](https://arxiv.org/abs/1705.10306)
 
 <!-- #### Acknowledgements
 I would like to thank [Tom Rainforth](http://www.robots.ox.ac.uk/~twgr/) for including me in this project as well as [Neil Dhir](http://www.robots.ox.ac.uk/~neild/) and [Anton Troynikov](http://troynikov.io/) for proofreading this post. -->
