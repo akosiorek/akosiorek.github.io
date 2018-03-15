@@ -72,11 +72,13 @@ Our new problem is, of course, that to evaluate the *KL* we need to know the pos
 Not all is lost, for doing a little algebra can give us an objective function that is possible to compute.
 
 $$
-  KL \left( q_\phi (\mathbf{z} \mid \mathbf{x}) || p(\mathbf{z} \mid \mathbf{x}) \right) =\\
-  \mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log q_\phi (\mathbf{z} \mid \mathbf{x}) - \log p_\theta(\mathbf{z} \mid \mathbf{x}) \right] = \\
-  \mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log q_\phi (\mathbf{z} \mid \mathbf{x}) - \log p_\theta(\mathbf{z}, \mathbf{x}) \right] - \log p_\theta(\mathbf{x}) =\\
-  \mathcal{L} (\mathbf{x}; \theta, \phi) - \log p_\theta(\mathbf{x})
+\begin{align}
+  KL &\left( q_\phi (\mathbf{z} \mid \mathbf{x}) || p(\mathbf{z} \mid \mathbf{x}) \right)\\
+  &=\mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log q_\phi (\mathbf{z} \mid \mathbf{x}) - \log p_\theta(\mathbf{z} \mid \mathbf{x}) \right]\\
+  &=\mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log q_\phi (\mathbf{z} \mid \mathbf{x}) - \log p_\theta(\mathbf{z}, \mathbf{x}) \right] - \log p_\theta(\mathbf{x})\\
+  &=\mathcal{L} (\mathbf{x}; \theta, \phi) - \log p_\theta(\mathbf{x})
   \tag{5}
+\end{align}
 $$
 
 Where on the second line I expanded the logarithm, on the third line I used the Bayes' theorem and the fact that $$p_\theta (\mathbf{x})$$ is independent of $$\mathbf{z}$$. $$\mathcal{L} (\mathbf{x}; \theta, \phi)$$ in the last line is a lower bound on the log probability of data $$p_\theta (\mathbf{x})$$ - the so-called evidence-lower bound (*ELBO*). We can rewrite it as
