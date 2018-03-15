@@ -52,7 +52,7 @@ From [importance sampling literature](http://statweb.stanford.edu/~owen/mc/Ch-va
 In our setting, that function is just $$p_\theta (\mathbf{x} \mid \mathbf{z} )$$.
 From Bayes' theorem, $$p(z \mid x) = \frac{p(x \mid z) p (z)}{p(x)}$$, we see that the optimal proposal is proportional to the posterior distribution, which is of course intractable.
 
-# Raise of a Variational Autoencoder
+# Rise of a Variational Autoencoder
 Fortunately, it turns out, we can kill two birds with one stone:
 by trying to approximate the posterior with a learned proposal, we can efficiently approximate the marginal probability $$p_\theta(\mathbf{x})$$.
 A bit by accident, we have just arrived at an autoencoding setup. To learn our model, we need
