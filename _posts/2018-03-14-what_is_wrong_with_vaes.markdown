@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: draft
 title:  "What is wrong with VAEs?"
 date:   2018-03-14 15:15:0 +0000
 comments: True
@@ -65,7 +65,7 @@ A bit by accident, we have just arrived at an autoencoding setup. To learn our m
 To approximate the posterior, we can use the [KL-divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence) (think of it as a distance between probability distributions) between the proposal and the posterior itself; and we can minimise it.
 
 $$
-  KL \left( q_\phi (\mathbf{z} \mid \mathbf{x}) || p(\mathbf{z} \mid \mathbf{x}) \right) = \mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log \frac{q_\phi (\mathbf{z} \mid \mathbf{x})}{p_\theta(\mathbf{z} \mid \mathbf{x})} \right] \tag{4}
+  KL \left( q_\phi (\mathbf{z} \mid \mathbf{x}) || p_\theta(\mathbf{z} \mid \mathbf{x}) \right) = \mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log \frac{q_\phi (\mathbf{z} \mid \mathbf{x})}{p_\theta(\mathbf{z} \mid \mathbf{x})} \right] \tag{4}
 $$
 
 Our new problem is, of course, that to evaluate the *KL* we need to know the posterior distribution.
@@ -73,10 +73,10 @@ Not all is lost, for doing a little algebra can give us an objective function th
 
 $$
 \begin{align}
-  KL &\left( q_\phi (\mathbf{z} \mid \mathbf{x}) || p(\mathbf{z} \mid \mathbf{x}) \right)\\
+  KL &\left( q_\phi (\mathbf{z} \mid \mathbf{x}) || p_\theta(\mathbf{z} \mid \mathbf{x}) \right)\\
   &=\mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log q_\phi (\mathbf{z} \mid \mathbf{x}) - \log p_\theta(\mathbf{z} \mid \mathbf{x}) \right]\\
-  &=\mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log q_\phi (\mathbf{z} \mid \mathbf{x}) - \log p_\theta(\mathbf{z}, \mathbf{x}) \right] - \log p_\theta(\mathbf{x})\\
-  &=\mathcal{L} (\mathbf{x}; \theta, \phi) - \log p_\theta(\mathbf{x})
+  &=\mathbb{E}_{q_\phi (\mathbf{z} \mid \mathbf{x})} \left[ \log q_\phi (\mathbf{z} \mid \mathbf{x}) - \log p_\theta(\mathbf{z}, \mathbf{x}) \right] + \log p_\theta(\mathbf{x})\\
+  &= -\mathcal{L} (\mathbf{x}; \theta, \phi) + \log p_\theta(\mathbf{x})
   \tag{5}
 \end{align}
 $$
@@ -84,7 +84,7 @@ $$
 Where on the second line I expanded the logarithm, on the third line I used the Bayes' theorem and the fact that $$p_\theta (\mathbf{x})$$ is independent of $$\mathbf{z}$$. $$\mathcal{L} (\mathbf{x}; \theta, \phi)$$ in the last line is a lower bound on the log probability of data $$p_\theta (\mathbf{x})$$ - the so-called evidence-lower bound (*ELBO*). We can rewrite it as
 
 $$
-  \log p_\theta(\mathbf{x}) = \mathcal{L} (\mathbf{x}; \theta, \phi) - KL \left( q_\phi (\mathbf{z} \mid \mathbf{x}) || p_\theta(\mathbf{z} \mid \mathbf{x}) \right), \tag{6}
+  \log p_\theta(\mathbf{x}) = \mathcal{L} (\mathbf{x}; \theta, \phi) + KL \left( q_\phi (\mathbf{z} \mid \mathbf{x}) || p_\theta(\mathbf{z} \mid \mathbf{x}) \right), \tag{6}
 $$
 
 $$
@@ -211,4 +211,4 @@ Please see [our paper](https://arxiv.org/abs/1802.04537) for details.
 * Extension of IWAE to sequences: [Chris Maddison *et. al.*, "FIVO"](https://arxiv.org/abs/1705.09279) and [Tuan Anh Le *et. al.*, "AESMC"](https://arxiv.org/abs/1705.10306)
 
 #### Acknowledgements
-I would like to thank [Neil Dhir](http://www.robots.ox.ac.uk/~neild/) and [Anton Troynikov](http://troynikov.io/) for proofreading this post and suggestions how to make it better.
+I would like to thank [Neil Dhir](http://www.robots.ox.ac.uk/~neild/) and [Anton Troynikov](http://troynikov.io/) for proofreading this post and suggestions on how to make it better.
