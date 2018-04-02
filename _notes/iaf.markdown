@@ -1,98 +1,9 @@
 ---
 layout: draft
-title:  "Normalizing Flows"
+title:  "IAF"
 date:   2018-03-18 09:43:0 +0000
 categories: ml
 ---
-
-Machine learning is all about probability.
-To train a model, we typically tune its parameters to maximise the probability of the training dataset under the model.
-To do so, we have to assume some probability distribution as the output of our model.
-The two distributions most commonly used are [Categorical](s) for classification and [Gaussian](s) for regression.
-The latter case can be problematic, as the true probability density function (pdf) of real data is often far from Gaussian.
-If we use the Gaussian as likelihood for image-generation models, we end up with blurry reconstructions, as shown e.g. [here](s).
-We can circumvent this issue by [adversarial training](s), which is an example of likelihood-free inference, but this approach has its own issues.
-
-Gaussians are also used, and often prove too simple, as the pdf for latent variables in Variational Autoencoders (VAEs), which I describe in my [previous post](s).
-Fortunately, we can often take a simple probability distribution, take a sample from it and then transform the sample.
-This is equivalent to change of variables and, if the transformation meets some mild conditions, can result in a very complex pdf of the transformed variable.
-[Danilo Rezende](s) formalised this in his paper on [Normalizing Flows (NF)](s), which I describe below.
-NFs are usually used to parametrise the approximate posterior $$q$$ in VAEs but can also be applied for the likelihood function.
-
-# Change of Variables in Probability Distributions
-We can transform a probability distribution using an invertible mapping.
-Let $$\mathbf{z} \in \mathbb{R}^d$$ be a random variable and $$f: \mathbb{R}^d \mapsto \mathbb{R}^d$$ an invertible smooth mapping.
-We can use $$f$$ to transform $$\mathbf{z} \sim q(\mathbf{z})$$.
-The resulting random variable $$\mathbf{y} = f(\mathbf{z})$$ has the following probability distribution:
-
-$$
-  q_y(\mathbf{y}) = q(\mathbf{z}) \left|
-    \mathrm{det} \frac{
-      \partial f^{-1}
-    }{
-      \partial \mathbf{z}\
-    }
-  \right|
-  = q(\mathbf{z}) \left|
-    \mathrm{det} \frac{
-      \partial f
-    }{
-      \partial \mathbf{z}\
-    }
-  \right| ^{-1}. \tag{1}
-$$
-
-We can apply a series of mappings $$f_k$$, $$k \in {1, \dots, K}$$, with $$K \in \mathbb{N}_+$$ and obtain a normalizing flow, first introduced in [Variational Inference with Normalizing Flows](https://arxiv.org/abs/1505.05770),
-
-$$
-  \mathbf{z}_K = f_K \circ \dots \circ f_1 (\mathbf{z}_0), \quad \mathbf{z}_0 \sim q_0(\mathbf{z}_0), \tag{2}
-$$
-
-$$
-  \mathbf{z}_K \sim q_K(\mathbf{z}_K) = q_0(\mathbf{z}_0) \prod_{k=1}^K
-  \left|
-    \mathrm{det} \frac{
-      \partial f_k
-    }{
-      \partial \mathbf{z}_{k-1}\
-    }
-  \right| ^{-1}. \tag{3}
-$$
-
-This series of transformations can transform a simple probability distribution (*e.g.* Gaussian) into a complicated multi-modal one.
- To be of practical use, however, we can consider only transformations, whose determinants of Jacobians are easy to compute.
-The original paper considered two simple family of transformations, named planar and radial flows.
-
-# Simple Flows
-## Planar Flow
-$$
-  f(\mathbf{z}) = \mathbf{z} + \mathbf{u} h(\mathbf{w}^T \mathbf{z} + b), \tag{4}
-$$
-
-with $$\mathbf{u}, \mathbf{w} \in \mathbb{R}^d$$ and $$b \in \mathbb{R}$$ and $$h$$ an element-wise non-linearity.
-Let $$\psi (\mathbf{z}) = h' (\mathbf{w}^T \mathbf{z} + b) \mathbf{w}$$. The determinant can be easily computed as
-
-$$
-  \left| \mathrm{det} \frac{\partial f}{\partial \mathbf{z}} \right| =
-  \left| 1 + \mathbf{u}^T \psi( \mathbf{z} ) \right|. \tag{5}
-$$
-
-We can think of it as slicing the $$\mathbf{z}$$-space with straight lines (or hyperplanes), where each line contracts or expands the space around it.
-
-## Radial Flow
-
-$$
-  f(\mathbf{z}) = \mathbf{z} + \beta h(\alpha, r)(\mathbf{z} - \mathbf{z}_0), \tag{6}
-$$
-
-with $$r = \Vert\mathbf{z} - \mathbf{z}_0\Vert_2$$, $$h(\alpha, r) = \frac{1}{\alpha + r}$$
-and parameters $$\mathbf{z}_0 \in \mathbb{R}^d, \alpha \in \mathbb{R}_+$$ and $$\beta \in \mathbb{R}$$.
-
-Similarly to planar flows, radial flows introduce spheres in the $$\mathbf{z}$$-space, which either contract or expand the space inside the sphere.
-
-These simple flows are useful only for low dimensional spaces, since each transformation affects only a small volume in the original space. As the volume of the space grows exponentially with the number of dimensions $$d$$, we need a lot of layers in a high-dimensional space.
-
-Another way to understand the need for many layers is to look at the form of the mappings. Each mapping behaves as a hidden layer of a neural network with one hidden unit and a skip connection. Since a single hidden unit is not very expressive, we need a lot of transformations. [Sylvester Normalising Flows](https://arxiv.org/abs/1803.05649), introduced recently by my colleague Leonard Hasenclever (*et. al.*), solve this last issue.
 
 # Autoregressive Flows
 Enhancing expressivity of normalising flows is not easy, since we are constrained by functions, whose Jacobians are easy to compute.
@@ -150,53 +61,41 @@ This way, variables that are just copied in one step, are transformed in the fol
 We can be even more expressive than R-NVPs, but we pay a price.
 Here's why.
 
-Now, let $$\mathbf{\mu} \in \mathbb{R}^d$$ and $$\mathbf{\sigma} \in \mathbb{R}^d_+$$.
-We can introduce complex dependencies between dimensions of the random variable $$\mathbf{y} \in \mathbb{R}^d$$ by specifying it in the following way.
+Let $$\mathbf{\mu} \in \mathbb{R}^d$$ and $$\mathbf{\sigma} \in \mathbb{R}^d_+$$.
+Let $$\mathbf{\epsilon} \sim \mathcal{N} (\mathbf{0}, \mathbf{I}), \mathbf{\epsilon} \in \mathbb{R}^d$$ be a noise vector.
+We can introduce complex dependencies between dimensions of a random variable $$\mathbf{z} \in \mathbb{R}^d$$ by specifying it in the following way.
 
-$$ y_1 = \mu_1 + \sigma_1 z_1 \tag{12}$$
+$$ z_1 = \mu_1 + \sigma_1 \epsilon_1 \tag{12}$$
 
-$$ y_i = \mu (\mathbf{y}_{1:i-1}) + \sigma (\mathbf{y}_{1:i-1}) z_i \tag{13}$$
+$$ z_i = \mu (\mathbf{z}_{1:i-1}) + \sigma (\mathbf{z}_{1:i-1}) \epsilon_i \tag{13}$$
 
-Since each dimension depends only on the previous dimensions, the Jacobian of this transformation is a lower-triangular matrix with $$\sigma (\mathbf{z}_{1:i-1})$$ on the diagonal (to be derived later);
-the determinant is just a product of the terms on the diagonal.
-We might able to sample $$\mathbf{z} \sim q(\mathbf{z})$$ in parallel (if different dimensions are *i.i.d.*), but the transformation is inherently sequential.
-We need to compute all $$\mathbf{y}_{1:i-1}$$ before computing $$\mathbf{y}_i$$, which can be time consuming, and is therefore expensive to use as a parametrisation for the approximate posterior in VAEs.
+Since each dimension depends only on the previous dimensions, the Jacobian of this transformation is a lower-triangular matrix with $$\sigma (\mathbf{z}_{1:i-1})$$ on the diagonal (to be derived later); the determinant is just a product of the terms on the diagonal.
+We can sample $$\mathbf{\epsilon}$$ in parallel (since different dimensions are *i.i.d.*), but the transformation is inherently sequential. We need to compute all $$\mathbf{z}_{1:i-1}$$ before computing $$\mathbf{z}_i$$, which can be time consuming, and is therefore expensive to use as a parametrisation for the approximate posterior in VAEs.
 
 This is an invertible transformation, and the inverse has the following form.
 
 $$
-  z_i = \frac{
-    y_i - \mu (\mathbf{y}_{1:i-1})
+  \epsilon_i = \frac{
+    z_i - \mu (\mathbf{z}_{1:i-1})
   }{
-    \sigma (\mathbf{y}_{1:i-1})
+    \sigma (\mathbf{z}_{1:i-1})
   } \tag{14}
 $$
 
-Given vectors $$\mathbf{\mu}$$ and $$\mathbf{\sigma}$$, we can vectorise the inverse transformation, similar to equation (11), as
+Given vectors $$\mathbf{\mu}$$ and $$\mathbf{\sigma}$$, we can vectorise the inverse transformations as
 
 $$
-  \mathbf{z} = \frac{
-    \mathbf{y} - \mathbf{\mu} (\mathbf{y})
+  \mathbf{\epsilon} = \frac{
+    \mathbf{z} - \mathbf{\mu} (\mathbf{z})
   }{
-    \mathbf{\sigma} (\mathbf{y})
+    \mathbf{\sigma} (\mathbf{z})
 }. \tag{15}
 $$
 
 The Jacobian is again lower-triangular, with $$\mathbf{\sigma}^{-1}$$ on the diagonal.
 
-The difference between the forward and the inverse transofrmations is that in the forward transformation, statistics used to transform every dimension depend on all the previously transformed dimensions. In the inverse transformation, the statistics used to invert $$\mathbf{y}$$ (which is the input), depend only on that input, and not on any result of the inversion.
+The difference between the forward and the inverse transofrmations is that in the forward transformation, statistics used to transform every dimension depend on all the previously transformed dimensions. In the inverse transformation, the statistics used to invert $$\mathbf{z}$$ (which is the input), depend only on that input, and not on any result of the inversion.
 
-## [Masked Autoregressive Flow (MAF)](https://arxiv.org/abs/1705.07057)
-MAF directly uses equations (12) and (13).
-Since this transformation is inherently sequential, MAF is terribly slow when it comes to sampling.
-To evaluate the probability of a sample, however, we need the inverse mapping.
-MAF, which was designed for density estimation, can do that efficiently by using equation (15).
-In principle, we could use it to parametrise the likelihood function (*a.k.a.* the decoder) in VAEs, but we would not be able to generate new data.
-At least not in any reasonable computing time.
-We could also use it as a prior $$p(\mathbf{z})$$ in VAEs.
-If the dimensionality of the latent variable isn't too big, we could still sample from it.
-
-I am not sure about any other applications. Please write a comment if anything comes to mind.
 
 ## [Inverse Autoregressive Flow (IAF)](https://arxiv.org/abs/1606.04934)
 IAF builds on equation (14). Let $$\mathbf{x} \in \mathbb{R}^D$$ be an observation and $$\mathbf{h} \in \mathbb{R}^n$$ a hidden state. We use a neural network $$h^\mathrm{enc}_\phi$$ to produce initial statistics and we sample a noise vector from a standard normal.
@@ -276,7 +175,3 @@ $$
 $$
 
 This can be expensive, but as long as $$\mu$$ and $$\sigma$$ are implemented as autoregressive transformations, it is possible.
-
-# Further reading
-* [Parallel WaveNet](https://arxiv.org/abs/1711.10433) combines MAF and IAF in a very clever trick the authors call Distribution Distillation,
-* [Hamiltonian Flow](s) as an example of time-continuous flow.
