@@ -8,15 +8,15 @@ categories: ml
 Machine learning is all about probability.
 To train a model, we typically tune its parameters to maximise the probability of the training dataset under the model.
 To do so, we have to assume some probability distribution as the output of our model.
-The two distributions most commonly used are [Categorical](s) for classification and [Gaussian](s) for regression.
+The two distributions most commonly used are [Categorical](https://en.wikipedia.org/wiki/Categorical_distribution) for classification and [Gaussian](https://en.wikipedia.org/wiki/Normal_distribution) for regression.
 The latter case can be problematic, as the true probability density function (pdf) of real data is often far from Gaussian.
-If we use the Gaussian as likelihood for image-generation models, we end up with blurry reconstructions, as shown e.g. [here](s).
-We can circumvent this issue by [adversarial training](s), which is an example of likelihood-free inference, but this approach has its own issues.
+If we use the Gaussian as likelihood for image-generation models, we end up with blurry reconstructions.
+We can circumvent this issue by [adversarial training](http://openaccess.thecvf.com/content_cvpr_2017/papers/Ledig_Photo-Realistic_Single_Image_CVPR_2017_paper.pdf), which is an example of likelihood-free inference, but this approach has its own issues.
 
-Gaussians are also used, and often prove too simple, as the pdf for latent variables in Variational Autoencoders (VAEs), which I describe in my [previous post](s).
+Gaussians are also used, and often prove too simple, as the pdf for latent variables in Variational Autoencoders (VAEs), which I describe in my [previous post](http://akosiorek.github.io/ml/2018/03/14/what_is_wrong_with_vaes.html).
 Fortunately, we can often take a simple probability distribution, take a sample from it and then transform the sample.
 This is equivalent to change of variables and, if the transformation meets some mild conditions, can result in a very complex pdf of the transformed variable.
-[Danilo Rezende](s) formalised this in his paper on [Normalizing Flows (NF)](s), which I describe below.
+[Danilo Rezende](https://danilorezende.com/) formalised this in his paper on [Normalizing Flows (NF)](https://arxiv.org/abs/1505.05770), which I describe below.
 NFs are usually used to parametrise the approximate posterior $$q$$ in VAEs but can also be applied for the likelihood function.
 
 # Change of Variables in Probability Distributions
@@ -157,9 +157,9 @@ $$ y_1 = \mu_1 + \sigma_1 z_1 \tag{12}$$
 
 $$ y_i = \mu (\mathbf{y}_{1:i-1}) + \sigma (\mathbf{y}_{1:i-1}) z_i \tag{13}$$
 
-Since each dimension depends only on the previous dimensions, the Jacobian of this transformation is a lower-triangular matrix with $$\sigma (\mathbf{z}_{1:i-1})$$ on the diagonal (to be derived later);
+Since each dimension depends only on the previous dimensions, the Jacobian of this transformation is a lower-triangular matrix with $$\sigma (\mathbf{z}_{1:i-1})$$ on the diagonal;
 the determinant is just a product of the terms on the diagonal.
-We might able to sample $$\mathbf{z} \sim q(\mathbf{z})$$ in parallel (if different dimensions are *i.i.d.*), but the transformation is inherently sequential.
+We might be able to sample $$\mathbf{z} \sim q(\mathbf{z})$$ in parallel (if different dimensions are *i.i.d.*), but the transformation is inherently sequential.
 We need to compute all $$\mathbf{y}_{1:i-1}$$ before computing $$\mathbf{y}_i$$, which can be time consuming, and is therefore expensive to use as a parametrisation for the approximate posterior in VAEs.
 
 This is an invertible transformation, and the inverse has the following form.
@@ -199,45 +199,44 @@ If the dimensionality of the latent variable isn't too big, we could still sampl
 I am not sure about any other applications. Please write a comment if anything comes to mind.
 
 ## [Inverse Autoregressive Flow (IAF)](https://arxiv.org/abs/1606.04934)
-IAF builds on equation (14). Let $$\mathbf{x} \in \mathbb{R}^D$$ be an observation and $$\mathbf{h} \in \mathbb{R}^n$$ a hidden state. We use a neural network $$h^\mathrm{enc}_\phi$$ to produce initial statistics and we sample a noise vector from a standard normal.
+IAF defines a pdf by using a reparametrised version of equations (14) and (15).
+In this case, the transformed variable is defined as an inverse autoregressive mapping of the following form.
 
 $$
-\begin{align}
-  \mathbf{\mu}_0, \mathbf{\sigma}_0, \mathbf{h}_0 = &h^\mathrm{enc}_\phi ( \mathbf{x} )\\
-  \mathbf{z}_0 = \mathbf{\mu}_0 + \mathbf{\sigma}_0 \mathbf{\epsilon},
-  \quad &\mathbf{\epsilon} \sim \mathcal{N} (\mathbf{0}, \mathbf{I})
-\end{align} \tag{10}
+  y_i = z_i \sigma (\mathbf{z}_{1:i-1}) + \mu (\mathbf{z}_{1:i-1}) \tag{16}
 $$
 
-We then use another neural network $$R^k_\phi$$ (or a series of them), to parametrise subsequent transformations,
+Since all $$\mu$$ and $$\sigma$$ depend only on $$\mathbf{z}$$ but not on $$\mathbf{y}$$, they can be all computed in parallel, in a single forward pass.
+To see that equation (16) is in fact a reparametrised version of equation (14), set $$\tilde{z}_i = y_i$$, $$\tilde{y}_i = z_i$$, $$\tilde{\mu} = -\frac{\mu}{\sigma}$$ and $$\tilde{\sigma} = \frac{1}{\sigma}$$.
 
 $$
-\begin{align}
-  \mathbf{\mu}_k, \mathbf{\sigma}_k, \mathbf{h}_k &= R^k_\phi ( \mathbf{z}_{k-1}, \mathbf{h}_{k-1} ),\\
-  \mathbf{z}_k &= \mathbf{\mu}_k + \mathbf{\sigma}_k \mathbf{z}_{k-1}.
-\end{align} \tag{11}
+  (16) \implies
+  \tilde{z}_i = -\frac{\tilde{\mu} (\tilde{\mathbf{y}}_{1:i-1})}{ \tilde{\sigma} (\tilde{\mathbf{y}}_{1:i-1})} + \frac{1}{\tilde{\sigma} (\tilde{\mathbf{y}}_{1:i-1})}\tilde{y}_i =
+  \frac{\tilde{y}_i - \tilde{\mu} (\tilde{\mathbf{y}}_{1:i-1})}{ \tilde{\sigma}(\tilde{\mathbf{y}}_{1:i-1})}
+  = (14).
 $$
 
-Even though the second line of equations (10) and (11) looks more like equation (7), they are really reparamtrised versions of equation (9) - the inverse autoregressive transformation.
-To see this, set $$\mathbf{z}_k = \epsilon$$, $$\mathbf{z}_{k-1} = \mathbf{z}$$, $$\mu_k = -\frac{\mu(\mathbf{z})}{\sigma(\mathbf{z})}$$ and $$\sigma_k = \frac{1}{\sigma(\mathbf{z})}$$. Substitution gives us:
+This reparametrisation is useful, because it avoids divisions, which can be numerically unstable. This type of autoregressive functions can be efficiently implemented using [MADE](https://arxiv.org/abs/1502.03509)-type neural networks, which is nicely explained in [this blog post by Ferenc](http://www.inference.vc/masked-autoencoders-icml-paper-highlight/). Using MADE, we can vectorise equation (16) as
 
 $$
-  \mathbf{z}_k = \mathbf{\mu}_k + \mathbf{\sigma}_k \mathbf{z}_{k-1}
-  \implies
-  \epsilon = -\frac{\mu(\mathbf{z})}{\sigma(\mathbf{z})} + \frac{1}{\sigma(\mathbf{z})}\mathbf{z} =
-  \frac{\mathbf{z} - \mu(\mathbf{z})}{\sigma(\mathbf{z})} = (7).
+  \mathbf{y} = \mathbf{z} \circ \sigma (\mathbf{z}) + \mu (\mathbf{z}). \tag{17}
 $$
 
-This reparametrisation is useful, because it avoids divisions, which can be numerically unstable. This type of autoregressive functions can be efficiently implemented using [MADE](https://arxiv.org/abs/1502.03509)-type neural networks, which is nicely explained in [this blog post](s).
+To understand how IAF affects the pdf of $$\mathbf{z}$$, we can compute the resulting probability density function. Here, we assume that $$\mathbf{z}$$ follows a standard normal distribution,
 
-To understand how does this transformation affect the distribution of $$\mathbf{z}$$, we can compute the resulting probability density function.
-
-$$ \log q( \mathbf{\epsilon} ) = \log \mathcal{N} (\mathbf{\epsilon} \mid \mathbf{0}, \mathbf{I}) = - \sum_{i=1}^d \left(
-  \log \epsilon_i + \frac{1}{2} \log 2 \pi \right)
-  = - \frac{d}{2} \log 2 \pi - \sum_{i=1}^d \log \epsilon_i
+$$
+  \log q( \mathbf{z} )
+  = \log \mathcal{N} (\mathbf{z} \mid \mathbf{0}, \mathbf{I})
+  = - \sum_{i=1}^d \left(
+    \log z_i + \frac{1}{2} \log 2 \pi
+  \right)
+  = - \frac{d}{2} \log 2 \pi - \sum_{i=1}^d \log z_i.
 $$
 
-To factor in subsequent transformations, we need to compute all the Jacobians.
+The final pdf can be comprised of $$K \in \mathcal{N}_+$$ IAFs.
+To take this into account, we now set $$\mathbf{z}_k = \mathbf{z}$$ and $$\mathbf{z}_{k+1} = \mathbf{y}$$;
+*i.e.* $$\mathbf{z}_{k+1}$$ is the result of transforming $$\mathbf{z}_k$$.
+To factor in subsequent transformations, we need to compute all the Jacobians:
 
 $$
   \frac{\partial \mathbf{z}_k}{\partial \mathbf{z}_{k-1}}
@@ -262,11 +261,11 @@ $$
 Therefore, the final log-probability can be written as
 
 $$
-  \log q_K (\mathbf{z}_K) = \log q(\epsilon) - \sum_{k=0}^K \sum_{i=1}^d \log \sigma_{k, i}.
+  \log q_K (\mathbf{z}_K) = \log q(\mathbf{z}) - \sum_{k=0}^K \sum_{i=1}^d \log \sigma_{k, i}.
 $$
 
-### Sampling and Density Evaluation
-Sampling is easy, since we just sample $$\epsilon \sim q(\epsilon)$$ and then forward-transform it into $$\mathbf{z}_K$$. Each of the transformations gives us the vector $$\sigma_k$$, so that we can readily evaluate the probability of the sample $$q_K(\mathbf{z}_K)$$.
+Sampling from an IAF is easy, since we just sample $$\mathbf{z} \sim q(\mathbf{z})$$ and then forward-transform it into $$\mathbf{z}_K$$.
+Each of the transformations gives us the vector $$\sigma_k$$, so that we can readily evaluate the probability of the sample $$q_K(\mathbf{z}_K)$$.
 
 To evaluate the density of a sample not taken from $$q_K$$, we need to compute the chain of inverse transformations $$f^{-1}_k$$, $$k = K, \dots, 0$$. To do so, we have to sequentially compute
 
@@ -278,5 +277,6 @@ $$
 This can be expensive, but as long as $$\mu$$ and $$\sigma$$ are implemented as autoregressive transformations, it is possible.
 
 # Further reading
+* [Two-part practical tutorial on normalising flows by Eric Jang](https://blog.evjang.com/2018/01/nf1.html)
 * [Parallel WaveNet](https://arxiv.org/abs/1711.10433) combines MAF and IAF in a very clever trick the authors call Distribution Distillation,
-* [Hamiltonian Flow](s) as an example of time-continuous flow.
+* [Continuous-Time Flows](https://arxiv.org/abs/1709.01179), as an example of even more expressive transformation.
