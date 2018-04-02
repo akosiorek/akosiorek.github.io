@@ -1,7 +1,7 @@
 ---
 layout: draft
 title:  "Normalizing Flows"
-date:   2018-03-18 09:43:0 +0000
+date:   2018-04-02 09:43:0 +0000
 categories: ml
 ---
 
@@ -230,7 +230,7 @@ $$
   = - \sum_{i=1}^d \left(
     \log z_i + \frac{1}{2} \log 2 \pi
   \right)
-  = - \frac{d}{2} \log 2 \pi - \sum_{i=1}^d \log z_i.
+  = - \frac{d}{2} \log 2 \pi - \sum_{i=1}^d \log z_i. \tag{18}
 $$
 
 The final pdf can be comprised of $$K \in \mathcal{N}_+$$ IAFs.
@@ -247,7 +247,7 @@ $$
   + \mathrm{diag}( \sigma_k )
   \underbrace{
     \frac{\partial \mathbf{z}_{k-1}}{\partial \mathbf{z}_{k-1}}
-  }_{= \mathbf{I}}
+  }_{= \mathbf{I}} \tag{19}
 $$
 
 If $$\mu_k = \mu_k ( \mathbf{z}_{k-1})$$ and $$\sigma_k = \sigma_k ( \mathbf{z}_{k-1})$$ are implemented as autoregressive transofrmations (with respect to $$\mathbf{z}_{k-1}$$), then the first two terms in the Jacobian above are lower triangular matrices with zeros on the diagonal.
@@ -255,13 +255,13 @@ The last term is a diagonal matrix, with $$\sigma_k$$ on the diagonal.
 Thus, the determinant of the Jacobian is just
 
 $$
-  \mathrm{det} \left( \frac{\partial \mathbf{z}_k}{\partial \mathbf{z}_{k-1}} \right) = \prod_{i=1}^d \sigma_{k, i}.
+  \mathrm{det} \left( \frac{\partial \mathbf{z}_k}{\partial \mathbf{z}_{k-1}} \right) = \prod_{i=1}^d \sigma_{k, i}. \tag{20}
 $$
 
 Therefore, the final log-probability can be written as
 
 $$
-  \log q_K (\mathbf{z}_K) = \log q(\mathbf{z}) - \sum_{k=0}^K \sum_{i=1}^d \log \sigma_{k, i}.
+  \log q_K (\mathbf{z}_K) = \log q(\mathbf{z}) - \sum_{k=0}^K \sum_{i=1}^d \log \sigma_{k, i}. \tag{21}
 $$
 
 Sampling from an IAF is easy, since we just sample $$\mathbf{z} \sim q(\mathbf{z})$$ and then forward-transform it into $$\mathbf{z}_K$$.
@@ -271,7 +271,7 @@ To evaluate the density of a sample not taken from $$q_K$$, we need to compute t
 
 $$
   \mathbf{z}_{k-1, 1} = \frac{\mathbf{z}_{k, 1} - \mu_{k, 1}}{\sigma_{k, 1}},\\
-  \mathbf{z}_{k-1, i} = \frac{\mathbf{z}_{k, i} - \mu_{k, i} (\mathbf{z}_{k-1, 1:i-1})}{\sigma_{k, i} (\mathbf{z}_{k-1, 1:i-1})}.
+  \mathbf{z}_{k-1, i} = \frac{\mathbf{z}_{k, i} - \mu_{k, i} (\mathbf{z}_{k-1, 1:i-1})}{\sigma_{k, i} (\mathbf{z}_{k-1, 1:i-1})}. \tag{22}
 $$
 
 This can be expensive, but as long as $$\mu$$ and $$\sigma$$ are implemented as autoregressive transformations, it is possible.
