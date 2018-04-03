@@ -1,7 +1,9 @@
 ---
-layout: draft
+layout: post
 title:  "Normalizing Flows"
-date:   2018-04-02 09:43:0 +0000
+date:   2018-04-03 09:43:0 +0000
+share: True
+comments: True
 categories: ml
 ---
 
@@ -60,7 +62,7 @@ $$
 $$
 
 This series of transformations can transform a simple probability distribution (*e.g.* Gaussian) into a complicated multi-modal one.
- To be of practical use, however, we can consider only transformations, whose determinants of Jacobians are easy to compute.
+To be of practical use, however, we can consider only transformations whose determinants of Jacobians are easy to compute.
 The original paper considered two simple family of transformations, named planar and radial flows.
 
 # Simple Flows
@@ -110,7 +112,7 @@ This is because the functions $$h$$ in planar and radial flow are invertible onl
 Enhancing expressivity of normalising flows is not easy, since we are constrained by functions, whose Jacobians are easy to compute.
 It turns out, though, that we can introduce dependencies between different dimensions of the latent variable, and still end up with a tractable Jacobian.
 Namely, if after a transformation, the dimension $$i$$ of the resulting variable depends only on dimensions $$1:i$$ of the input variable, then the Jacobian of this transformation is triangular.
-As we know, a Jacobian of a triangular matrix is equal to the product of the terms on the diagonal.
+As we know, a determinant of a triangular matrix is equal to the product of the terms on the diagonal.
 More formally, let $$J \in \mathcal{R}^{d \times d}$$ be the Jacobian of the mapping $$f$$, then
 
 $$
@@ -122,7 +124,7 @@ $$
   \det{J} = \prod_{i=1}^d J_{ii}. \tag{8}
 $$
 
-There are three interesting flows that use the above observation, albeit in different ways, and arrive at mappings with very different properties.
+I would like to draw your attention to three interesting flows that use the above observation, albeit in different ways, and arrive at mappings with very different properties.
 
 ## [Real Non-Volume Preserving Flows (R-NVP)](https://arxiv.org/abs/1605.08803)
 R-NVPs are arguably the least expressive but the most generally applicable of the three.
@@ -323,5 +325,5 @@ This clever application of both types of flows allowed to improve efficiency of 
 * [Continuous-Time Flows](https://arxiv.org/abs/1709.01179), as an example of even more expressive transformation.
 
 
-<!-- #### Acknowledgements
-I would like to thank [Adam Goliński](http://adamgol.me/) for his detailed feedback and numerous remarks on how to improve this post. -->
+#### Acknowledgements
+I would like to thank [Adam Goliński](http://adamgol.me/) for fruitful discussions as well as his detailed feedback and numerous remarks on how to improve this post.
