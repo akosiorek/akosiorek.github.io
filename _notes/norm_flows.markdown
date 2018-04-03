@@ -114,7 +114,7 @@ As we know, a Jacobian of a triangular matrix is equal to the product of the ter
 More formally, let $$J \in \mathcal{R}^{d \times d}$$ be the Jacobian of the mapping $$f$$, then
 
 $$
-  \mathbf{y}_i = f(\mathbf{z}_{1:i}),
+  y_i = f(\mathbf{z}_{1:i}),
   \qquad J = \frac{\partial \mathbf{y}}{\partial \mathbf{z}}, \tag{7}
 $$
 
