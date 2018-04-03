@@ -170,7 +170,7 @@ In other words, the more particles we use to estimate $$\mathcal{L}_K$$, the clo
 This means that the gradient estimator, derived by differentiating the *IWAE*, points us in a better direction than the gradient of the original *ELBO* would.
 Additionally, as we increase $$K$$, the variance of that gradient estimator shrinks.
 
-It is great for the generative model, but it turns out to be problematic for the proposal.
+It is great for the generative model, but, as we shown in our recent paper [*Tighter Variational Bounds are Not Necessarily Better*](https://arxiv.org/abs/1802.04537), it turns out to be problematic for the proposal.
 The magnitude of the gradient with respect to proposal parameters goes to zero with increasing $$K$$, and it does so much faster than its variance.  
 
 Let $$\Delta (\phi)$$ be a minibatch estimate of the gradient of an objective function we're optimising (*e.g.* *ELBO*) with respect to $$\phi$$. If we define signal-to-noise ratio (SNR) of the parameter update as
@@ -188,7 +188,7 @@ The conclusion here is simple: the more particles we use, the worse the inferenc
 If we care about representation learning, we have a problem.
 
 # Better estimators
-We can do better than the IWAE, as we've shown in [our recent paper](https://arxiv.org/abs/1802.04537).
+We can do better than the IWAE, as we've shown in [our paper](https://arxiv.org/abs/1802.04537).
 The idea is to use separate objectives for the inference and the generative models.
 By doing so, we can ensure that both get non-zero low-variance gradients, which lead to better models.
 
