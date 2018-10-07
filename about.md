@@ -18,7 +18,7 @@ I am always looking for exciting research and professional opportunities, so fee
 
 In my free time I read lots of books, train gymnastics, lift heavy weights and hike mountains.
 
-[My CV (updated 09/2018)](../resources/cv_adam_kosiorek.pdf)
+[My CV (updated 10/2018)](../resources/cv_adam_kosiorek.pdf)
 
 <div style="margin: 150px;"></div>
 
