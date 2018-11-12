@@ -30,7 +30,7 @@ As far as I know, there is no general mechanism to do 4., and it is typically ha
 
 If this truly is a general structure of an experiment, then there should exist tools to facilitate it.
 I am not familiar with any, however. Please let me know if such tools exist, or if the structure outlined above does not generally hold.
-[Sacred](https://github.com/IDSIA/sacred) is great for managing configuration files and experimental results; you can retrieve configuration of any experiment, but if you want to load a saved model in a notebook, for example, you need to know how to instantiate the model using the config. I would prefer to automate this, too.
+[Sacred](https://github.com/IDSIA/sacred) and [artemis](https://github.com/QUVA-Lab/artemis) are great for managing configuration files and experimental results; you can retrieve configuration of any experiment, but if you want to load a saved model in a notebook, for example, you need to know how to instantiate the model using the config. I would prefer to automate this, too.
 When it comes to [tensorflow](https://www.tensorflow.org/), there is [keras](https://keras.io/) and the [estimator api](https://www.tensorflow.org/guide/estimators) that simplify model building, fitting and evaluation.
 While generally useful, they are rather heavy and make access to low-level model features difficult.
 This is a no-go for me, since I often work on non-standard models and require access the most private of their parts.
@@ -48,11 +48,11 @@ As far as I now, such a framework does not exist.
 So how do I go about it?
 Since I started my master thesis at [BRML](http://brml.org/brml/index.html), I have been developing my own tools, including parts of an experimental framework, that meet some of the above requirements.
 However, for every new project I started, I would just copy parts of the code responsible for running experiments from the previous project.
-After doing that for five different projects (from [HART](https://github.com/akosiorek/hart) to [SQAIR}(https://github.com/akosiorek/sqair)]), I've had enough.
+After doing that for five different projects (from [HART](https://github.com/akosiorek/hart) to [SQAIR](https://github.com/akosiorek/sqair)), I've had enough.
 When I was about to start a new project last week, I've taken all the experiment-running code, made it project-agnostic, and put it into a separate repo, wrote some docs, and gave it a name. Lo and behold: [Forge](https://github.com/akosiorek/forge).
 
 # Forge
-
+While it is a very much work in progress, ...
 
 <!-- #### Acknowledgements
 I would like to thank [Alex Bewley](http://alex.bewley.ai/) for inspiration, [Adam Goliński](http://adamgol.me/) for discussions about software engineering in ML and [Martin Engelcke](https://ori.ox.ac.uk/ori-people/martin-engelcke/) for his feedback on `forge`. -->
