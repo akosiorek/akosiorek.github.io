@@ -43,4 +43,6 @@ In my free time I read lots of books, train calithenics, lift heavy weights and 
 <div style="margin: 50px;"></div>
 #### Projects
 ----------------
+[Forge](https://github.com/akosiorek/forge) - a lightweight tool for managing ML experiments.
+
 An implementation of ["Attend, Infer, Repeat"](https://papers.nips.cc/paper/6230-attend-infer-repeat-fast-scene-understanding-with-generative-models) by [Ali Eslami](http://arkitus.com/research/) *et. al.*  [`code`](https://github.com/akosiorek/attend_infer_repeat)

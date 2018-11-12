@@ -1,0 +1,58 @@
+---
+layout: draft
+title:  "Forge, or how do you manage your machine learning experiments?"
+date:   2018-10-11 10:15:00 +0000
+categories: notes
+---
+
+Every time I begin a machine learning (ML) project, I go through more or less the same steps.
+I start by quickly hacking a model prototype and a training script.
+After a few days, the codebase grows unruly and any modification is starting to take unreasonably long time due to badly-handled dependencies and the general lack of structure.
+At this point, I decide that some refactoring is needed:
+parts of the model are wrapped into separate, meaningful objects and the training script gets somewhat general structure, with clearly delineated sections.
+Further down the line, I am often faced with the need of supporting multiple datasets and a variety of models, where the differences between model variants are much more than just hyperparamers - they often differ structurally and have different inputs or outputs.
+At this point, I start copying training scripts to support model variants.
+It is very easy to set up, but maintanance becomes a nightmare: with copies of the code living in separate files, any modification has to be applied to all the files.
+
+For me, it is often unclear how to handle this last bit cleanly.
+It can be project-dependant.
+It is often easy to come up with simple hacks, but they do not generalize and can make code very messy very quickly.
+Given that most experiments look similar among the projects I have worked on, there should exist a general solution.
+Let's have a look at a structure of a typical experiment:
+1. You specify the data and corresponding hyperparamers.
+2. You specify the model and corresponding hyperparamers.
+3. You run the training script and (hopefully) save model checkpoints and logs during training.
+4. Once the training has converged, you might want to load a model checkpoint in another script or a notebook for thorough evaluation, or deploy the model.
+
+In most projects I have seen, 1. and 2. were split between the training script (dataset and model classes or functions) and external configs (hyperparamers as command-line arguments or config files).
+Logging and saving checkpoints **should** be a part of every training script, and yet it can be time-consuming to set up properly.
+As far as I know, there is no general mechanism to do 4., and it is typically handled by retrieving hyperparameters used in a specific experiment and using the dataset/model classes/functions directly to instantiate them in a script or a notebook.
+
+If this truly is a general structure of an experiment, then there should exist tools to facilitate it.
+I am not familiar with any, however. Please let me know if such tools exist, or if the structure outlined above does not generally hold.
+[Sacred](https://github.com/IDSIA/sacred) is great for managing configuration files and experimental results; you can retrieve configuration of any experiment, but if you want to load a saved model in a notebook, for example, you need to know how to instantiate the model using the config. I would prefer to automate this, too.
+When it comes to [tensorflow](https://www.tensorflow.org/), there is [keras](https://keras.io/) and the [estimator api](https://www.tensorflow.org/guide/estimators) that simplify model building, fitting and evaluation.
+While generally useful, they are rather heavy and make access to low-level model features difficult.
+This is a no-go for me, since I often work on non-standard models and require access the most private of their parts.
+
+All this suggests that we could benefit from a lightweight experimental framework for managing ML experiments.
+For me, it would be ideal if it satisfied the following requirements.
+1. It should require minimal setup.
+2. It has to be compatible with tensorflow (my main tool for ML these days).
+3. Ideally it should be usable with non-tensorflow models - software evolves quickly and my next project might be in [pytorch](https://pytorch.org/). Who knows?
+4. Datasets and models should be specified and configured separately, so that they can be mixed and matched later on.
+5. Hyerparameters and config files should be stored for every experiment, and it would be great if we could browse them easily, without using non-standard apps to do so (so no databases).
+6. Loading a trained model should be possible with minimum overhead, ideally without touching the original model-building code. Pointing at a specific experiment should be enough.
+
+As far as I now, such a framework does not exist.
+So how do I go about it?
+Since I started my master thesis at [BRML](http://brml.org/brml/index.html), I have been developing my own tools, including parts of an experimental framework, that meet some of the above requirements.
+However, for every new project I started, I would just copy parts of the code responsible for running experiments from the previous project.
+After doing that for five different projects (from [HART](https://github.com/akosiorek/hart) to [SQAIR}(https://github.com/akosiorek/sqair)]), I've had enough.
+When I was about to start a new project last week, I've taken all the experiment-running code, made it project-agnostic, and put it into a separate repo, wrote some docs, and gave it a name. Lo and behold: [Forge](https://github.com/akosiorek/forge).
+
+# Forge
+
+
+<!-- #### Acknowledgements
+I would like to thank [Alex Bewley](http://alex.bewley.ai/) for inspiration, [Adam Goliński](http://adamgol.me/) for discussions about software engineering in ML and [Martin Engelcke](https://ori.ox.ac.uk/ori-people/martin-engelcke/) for his feedback on `forge`. -->
