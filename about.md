@@ -24,7 +24,10 @@ In my free time I read lots of books, train calithenics, lift heavy weights and 
 
 #### Publications
 ----------------
+F. B. Fuchs, O. Groth, **A. R. Kosiorek**, A. Bewley, M. Wulfmeier, A. Vedaldi, I. Posner "Learning Physics with Neural Stethoscopes", _NeurIPS_ workshop on Modeling the Physical World: Learning, Perception, and Control, 2018.
+
 [J. Lee, Y. Lee, J. Kim, **A. R. Kosiorek**, S. Choi, Y. W. Teh "Set Transformer", _CoRR_, 2018.](https://arxiv.org/abs/1810.00825)
+
 
 [**A. R. Kosiorek**, H. Kim, I. Posner, Y. W. Teh "Sequential Attend, Infer, Repeat: Generative Modelling of Moving Objects", _NIPS_, 2018.](https://arxiv.org/abs/1806.01794) [`code`](https://github.com/akosiorek/sqair)
 

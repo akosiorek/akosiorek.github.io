@@ -54,5 +54,10 @@ When I was about to start a new project last week, I've taken all the experiment
 # Forge
 While it is a very much work in progress, ...
 
+
+# other references
+[datmo](https://towardsdatascience.com/datmo-the-open-source-tool-for-tracking-and-reproducible-machine-learning-experiments-ce1936188e0c)
+[studio](https://www.studio.ml/)
+
 <!-- #### Acknowledgements
 I would like to thank [Alex Bewley](http://alex.bewley.ai/) for inspiration, [Adam Goliński](http://adamgol.me/) for discussions about software engineering in ML and [Martin Engelcke](https://ori.ox.ac.uk/ori-people/martin-engelcke/) for his feedback on `forge`. -->
