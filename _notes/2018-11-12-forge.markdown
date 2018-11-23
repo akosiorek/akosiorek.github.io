@@ -60,8 +60,8 @@ Who knows, maybe it can simplify your workflow, too?
 Configs are perhaps the most useful component in `forge`.
 The idea is that we can specify an arbitrarily complicated config file as a python function, and then we can load it using `forge.load(config_file, *args, **kwargs)`, where `config_file` is a path on your filesystem.
 The convention is that the config file should define `load` function with the following signature: `load(config, *args, **kwargs)`.
-The arguments and kw-args passed to `forge.load` are automatically forwrded to the `load` function in the config file.
-Why would you load a config by giving its filepath? To make code maintanance easier!
+The arguments and kw-args passed to `forge.load` are automatically forwarded to the `load` function in the config file.
+Why would you load a config by giving its filepath? To make code maintenance easier!
 Once you write config-loading code in your training/experimentation scripts, it is best not to touch it anymore.
 But how do you swap config files?
 **Without** touching the training script:
@@ -164,15 +164,14 @@ All this is very lightweight, as config files can return anything and take any a
 
 
 ### Smart checkpoints
-Given that we have very general and flexible config files, it should be possible to abstract away loading of the model.
-For example, it would be great if once we specify which configs we want to use to train a model, it should be possible to load a model snapshot without explicitly pointing to the config files used to train it.
+Given that we have very general and flexible config files, it should be possible to abstract away model loading.
+It would be great, for instance, if we could load a trained model snapshot **without** pointing to the config files (or model-building code, generally speaking) used to train the model.
 We can do it by storing config files with model snapshots.
 It can greatly simplify model evaluation and deployment and increase reproducibility of our experiments.
 How do we do it?
 This feature requires a bit more setup than just using config files, but bear with me - it might be even more useful.
 
-This checkpoint system depends on a structure of directories.
-We first need to initialize it, which creates the following structure:
+The smart checkpoint framework depends on the following folder structure.
 ```python
 results_dir
   |run_name
@@ -181,15 +180,14 @@ results_dir
     |...
     |<integer>  # number of the current run
 ```
-`results_dir` is the top-level folder containing model checkpoints.
-It can contain checkpoints for a number of jobs, where each job has a folder `run_name`.
-We might want to re-run a specific job, and for this reason every run we run a job with the same run, `forge` creates a folder, whose name is an integral number - the number of this run.
-It starts at one and gets incremented every time we start a new run of the same job.
-Instead of starting a new job, we can also resume the last job by passing a flag.
-In this case, we do not create a new folder for it, but just use the highest-numbered folder.
+`results_dir` is the top-level directory containing a number of experiment-specific folders, where every experiment has its own folder denoted by `run_name`.
+We might want to re-run a specific experiment, and for this reason every time we run it, `forge` creates a folder, whose name is an integral number - the number of this run.
+It starts at one and gets incremented every time we start a new run of the same experiment.
+Instead of starting a new run, we can also resume the last one by passing a flag.
+In this case, we do not create a new folder for it, but just use the highest-numbered folder and load the latest model snapshot.
 
 
-First, we need to do some imports and define some flags.
+First, we need to import `forge.experiment_tools` and define the following flags.
 ```python
 from os import path as osp
 from forge import experiment_tools as fet
@@ -199,7 +197,7 @@ flags.DEFINE_string('run_name', 'test_run', 'Name of this job. Results will be s
 flags.DEFINE_boolean('resume', False, 'Tries to resume a job if True.')
 ```
 
-We can then parse them and initialize our checkpoint.
+We can then parse the flags and initialize our checkpoint.
 ```python
 config = forge.config()  # parse flags
 
@@ -216,7 +214,6 @@ logdir, resume_checkpoint = fet.init_checkpoint(logdir, config.data_config, conf
 `logdir` is the path to our checkpoint folder and evaluates to `results_dir/run_name/<integer>`.
 `resume_checkpoint` is a path to a checkpoint if `resume` was `True`, typically `results_dir/run_name/<integer>/model.ckpt-<maximum global step>`, or `None` otherwise.
 
-That's all.
 Now we just need to use `logdir` and `resume_checkpoint` to store any logs and model snapshots.
 For example:
 ```python
@@ -234,7 +231,6 @@ if resume_checkpoint is not None:
 ...
 ```
 
-What's the advantage?
 If we want to load our model snapshot in another script, `eval.py`, say, we can do so in a very straightforward manner.
 ```python
 import tensorflow as tf
@@ -255,10 +251,10 @@ restore_func(sess)
 ```
 
 # Closing thoughts
-Even though experimental code exhibits very similar structure among experiments, there seem to be no tools to streamline experimentation process.
+Even though experimental code exhibits very similar structure among experiments, there seems to be no tools to streamline the experimentation process.
 This requires ML practitioners to write thousands of lines of boilerplate code, contributes to many errors and generally slows down research progress.
 `forge` is my attempt at introducing some good practices as well as simplifying the process.
-Hope you can take something from it for your purposes.
+Hope you can take something from it for your own purposes.
 
 <!-- #### Acknowledgements
 I would like to thank [Alex Bewley](http://alex.bewley.ai/) for inspiration, [Adam Goliński](http://adamgol.me/) for discussions about software engineering in ML and [Martin Engelcke](https://ori.ox.ac.uk/ori-people/martin-engelcke/) for his feedback on `forge`. -->
