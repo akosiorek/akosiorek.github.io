@@ -10,21 +10,21 @@ I start by quickly hacking a model prototype and a training script.
 After a few days, the codebase grows unruly and any modification is starting to take unreasonably long time due to badly-handled dependencies and the general lack of structure.
 At this point, I decide that some refactoring is needed:
 parts of the model are wrapped into separate, meaningful objects and the training script gets somewhat general structure, with clearly delineated sections.
-Further down the line, I am often faced with the need of supporting multiple datasets and a variety of models, where the differences between model variants are much more than just hyperparamers - they often differ structurally and have different inputs or outputs.
+Further down the line, I am often faced with the need of supporting multiple datasets and a variety of models, where the differences between model variants are much more than just hyperparameters - they often differ structurally and have different inputs or outputs.
 At this point, I start copying training scripts to support model variants.
-It is very easy to set up, but maintanance becomes a nightmare: with copies of the code living in separate files, any modification has to be applied to all the files.
+It is very easy to set up, but maintenance becomes a nightmare: with copies of the code living in separate files, any modification has to be applied to all the files.
 
 For me, it is often unclear how to handle this last bit cleanly.
-It can be project-dependant.
+It can be project-dependent.
 It is often easy to come up with simple hacks, but they do not generalize and can make code very messy very quickly.
 Given that most experiments look similar among the projects I have worked on, there should exist a general solution.
 Let's have a look at a structure of a typical experiment:
-1. You specify the data and corresponding hyperparamers.
-2. You specify the model and corresponding hyperparamers.
+1. You specify the data and corresponding hyperparameters.
+2. You specify the model and corresponding hyperparameters.
 3. You run the training script and (hopefully) save model checkpoints and logs during training.
 4. Once the training has converged, you might want to load a model checkpoint in another script or a notebook for thorough evaluation, or deploy the model.
 
-In most projects I have seen, 1. and 2. were split between the training script (dataset and model classes or functions) and external configs (hyperparamers as command-line arguments or config files).
+In most projects I have seen, 1. and 2. were split between the training script (dataset and model classes or functions) and external configs (hyperparameters as command-line arguments or config files).
 Logging and saving checkpoints **should** be a part of every training script, and yet it can be time-consuming to set up properly.
 As far as I know, there is no general mechanism to do 4., and it is typically handled by retrieving hyperparameters used in a specific experiment and using the dataset/model classes/functions directly to instantiate them in a script or a notebook.
 
@@ -61,7 +61,7 @@ Configs are perhaps the most useful component in `forge`.
 The idea is that we can specify an arbitrarily complicated config file as a python function, and then we can load it using `forge.load(config_file, *args, **kwargs)`, where `config_file` is a path on your filesystem.
 The convention is that the config file should define `load` function with the following signature: `load(config, *args, **kwargs)`.
 The arguments and kw-args passed to `forge.load` are automatically forwarded to the `load` function in the config file.
-Why would you load a config by giving its filepath? To make code maintenance easier!
+Why would you load a config by giving its file path? To make code maintenance easier!
 Once you write config-loading code in your training/experimentation scripts, it is best not to touch it anymore.
 But how do you swap config files?
 **Without** touching the training script:
@@ -95,7 +95,7 @@ flags.DEFINE_integer('n_hidden', 128, 'Number of hidden units.')
 
 def process_dataset(x):
   pass
-  # this functuon should return a minibatch, somehow
+  # this function should return a minibatch, somehow
 
 def load(config, dataset):
 
@@ -128,7 +128,7 @@ def load(config, dataset):
     stats = {'crossentropy': loss, 'accuracy': acc}
 
     # loss will be minimized with respect to the model parameters
-    return loss, stats, artefects
+    return loss, stats, artifacts
 ```
 
 Now we can write a simple script called `experiment.py` that loads some data and model config files and does useful things with them.
@@ -249,6 +249,10 @@ restore_func(sess)
 
 ...  # do interesting stuff with the model
 ```
+
+
+### Working Example
+Code for `forge` is available at [github.com/akosiorek/forge](https://github.com/akosiorek/forge) and a working example is describes in the `README`.
 
 # Closing thoughts
 Even though experimental code exhibits very similar structure among experiments, there seems to be no tools to streamline the experimentation process.
