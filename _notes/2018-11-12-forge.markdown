@@ -9,50 +9,50 @@ Every time I begin a machine learning (ML) project, I go through more or less th
 I start by quickly hacking a model prototype and a training script.
 After a few days, the codebase grows unruly and any modification is starting to take unreasonably long time due to badly-handled dependencies and the general lack of structure.
 At this point, I decide that some refactoring is needed:
-parts of the model are wrapped into separate, meaningful objects and the training script gets somewhat general structure, with clearly delineated sections.
+parts of the model are wrapped into separate, meaningful objects, and the training script gets somewhat general structure, with clearly delineated sections.
 Further down the line, I am often faced with the need of supporting multiple datasets and a variety of models, where the differences between model variants are much more than just hyperparameters - they often differ structurally and have different inputs or outputs.
 At this point, I start copying training scripts to support model variants.
-It is very easy to set up, but maintenance becomes a nightmare: with copies of the code living in separate files, any modification has to be applied to all the files.
+It is straightforward to set up, but maintenance becomes a nightmare: with copies of the code living in separate files, any modification has to be applied to all the files.
 
 For me, it is often unclear how to handle this last bit cleanly.
 It can be project-dependent.
-It is often easy to come up with simple hacks, but they do not generalize and can make code very messy very quickly.
+It is often easy to come up with simple hacks, but they do not generalise and can make code very messy very quickly.
 Given that most experiments look similar among the projects I have worked on, there should exist a general solution.
-Let's have a look at a structure of a typical experiment:
+Let's have a look at the structure of a typical experiment:
 1. You specify the data and corresponding hyperparameters.
-2. You specify the model and corresponding hyperparameters.
+2. You define the model and its hyperparameters.
 3. You run the training script and (hopefully) save model checkpoints and logs during training.
-4. Once the training has converged, you might want to load a model checkpoint in another script or a notebook for thorough evaluation, or deploy the model.
+4. Once the training has converged, you might want to load a model checkpoint in another script or a notebook for thorough evaluation or deploy the model.
 
 In most projects I have seen, 1. and 2. were split between the training script (dataset and model classes or functions) and external configs (hyperparameters as command-line arguments or config files).
-Logging and saving checkpoints **should** be a part of every training script, and yet it can be time-consuming to set up properly.
+Logging and saving checkpoints **should** be a part of every training script, and yet it can be time-consuming to set up correctly.
 As far as I know, there is no general mechanism to do 4., and it is typically handled by retrieving hyperparameters used in a specific experiment and using the dataset/model classes/functions directly to instantiate them in a script or a notebook.
 
-If this truly is a general structure of an experiment, then there should exist tools to facilitate it.
+If this indeed is a general structure of an experiment, then there should exist tools to facilitate it.
 I am not familiar with any, however. Please let me know if such tools exist, or if the structure outlined above does not generally hold.
-[Sacred](https://github.com/IDSIA/sacred) and [artemis](https://github.com/QUVA-Lab/artemis) are great for managing configuration files and experimental results; you can retrieve configuration of any experiment, but if you want to load a saved model in a notebook, for example, you need to know how to instantiate the model using the config. I would prefer to automate this, too.
+[Sacred](https://github.com/IDSIA/sacred) and [artemis](https://github.com/QUVA-Lab/artemis) are great for managing configuration files and experimental results; you can retrieve configuration of an experiment, but if you want to load a saved model in a notebook, for example, you need to know how to instantiate the model using the config. I prefer to automate this, too.
 When it comes to [tensorflow](https://www.tensorflow.org/), there is [keras](https://keras.io/) and the [estimator api](https://www.tensorflow.org/guide/estimators) that simplify model building, fitting and evaluation.
 While generally useful, they are rather heavy and make access to low-level model features difficult.
-This is a no-go for me, since I often work on non-standard models and require access the most private of their parts.
+Their lack of flexibility is a no-go for me since I often work on non-standard models and require access to the most private of their parts.
 
 All this suggests that we could benefit from a lightweight experimental framework for managing ML experiments.
 For me, it would be ideal if it satisfied the following requirements.
 1. It should require minimal setup.
-2. It has to be compatible with tensorflow (my main tool for ML these days).
-3. Ideally it should be usable with non-tensorflow models - software evolves quickly and my next project might be in [pytorch](https://pytorch.org/). Who knows?
-4. Datasets and models should be specified and configured separately, so that they can be mixed and matched later on.
-5. Hyerparameters and config files should be stored for every experiment, and it would be great if we could browse them easily, without using non-standard apps to do so (so no databases).
+2. It has to be compatible with tensorflow (my primary tool for ML these days).
+3. Ideally, it should be usable with non-tensorflow models - software evolves quickly, and my next project might be in [pytorch](https://pytorch.org/). Who knows?
+4. Datasets and models should be specified and configured separately so that they can be mixed and matched later on.
+5. Hyerparameters and config files should be stored for every experiment, and it would be great if we could browse them quickly, without using non-standard apps to do so (so no databases).
 6. Loading a trained model should be possible with minimum overhead, ideally without touching the original model-building code. Pointing at a specific experiment should be enough.
 
-As far as I now, such a framework does not exist.
+As far as I know, such a framework does not exist.
 So how do I go about it?
-Since I started my master thesis at [BRML](http://brml.org/brml/index.html), I have been developing my own tools, including parts of an experimental framework, that meet some of the above requirements.
-However, for every new project I started, I would just copy parts of the code responsible for running experiments from the previous project.
+Since I started my master thesis at [BRML](http://brml.org/brml/index.html), I have been developing tools, including parts of an experimental framework, that meet some of the above requirements.
+However, for every new project I started, I would copy parts of the code responsible for running experiments from the previous project.
 After doing that for five different projects (from [HART](https://github.com/akosiorek/hart) to [SQAIR](https://github.com/akosiorek/sqair)), I've had enough.
 When I was about to start a new project last week, I've taken all the experiment-running code, made it project-agnostic, and put it into a separate repo, wrote some docs, and gave it a name. Lo and behold: [Forge](https://github.com/akosiorek/forge).
 
 # Forge
-While it is a very much work in progress, I would like to show you how to setup your project using `forge`.
+While it is very much work in progress, I would like to show you how to set up your project using `forge`.
 Who knows, maybe it can simplify your workflow, too?
 
 ### Configs
@@ -115,7 +115,7 @@ def load(config, dataset):
 
     # put here everything that you might want to use later
     # for example when you load the model in a jupyter notebook
-    artefects = {
+    artefacts = {
         'mlp': mlp,
         'logits': logits,
         'loss': loss,
@@ -127,8 +127,8 @@ def load(config, dataset):
     # as tensorboard logs AND on the command line
     stats = {'crossentropy': loss, 'accuracy': acc}
 
-    # loss will be minimized with respect to the model parameters
-    return loss, stats, artifacts
+    # loss will be minimised with respect to the model parameters
+    return loss, stats, artefacts
 ```
 
 Now we can write a simple script called `experiment.py` that loads some data and model config files and does useful things with them.
@@ -159,7 +159,7 @@ loss, stats, stuff = forge.load(config.model_config, config, dataset)
 
 Here's the best part.
 You can just run `python experiment.py` to run the script with the config files given above.
-But if you would like to run a different config, you can just execute `python experiment.py --data_config some/config/file/path.py` without touching experimental code.
+But if you would like to run a different config, you can execute `python experiment.py --data_config some/config/file/path.py` without touching experimental code.
 All this is very lightweight, as config files can return anything and take any arguments you find necessary.
 
 
@@ -167,7 +167,7 @@ All this is very lightweight, as config files can return anything and take any a
 Given that we have very general and flexible config files, it should be possible to abstract away model loading.
 It would be great, for instance, if we could load a trained model snapshot **without** pointing to the config files (or model-building code, generally speaking) used to train the model.
 We can do it by storing config files with model snapshots.
-It can greatly simplify model evaluation and deployment and increase reproducibility of our experiments.
+It can significantly simplify model evaluation and deployment and increase reproducibility of our experiments.
 How do we do it?
 This feature requires a bit more setup than just using config files, but bear with me - it might be even more useful.
 
@@ -180,11 +180,11 @@ results_dir
     |...
     |<integer>  # number of the current run
 ```
-`results_dir` is the top-level directory containing a number of experiment-specific folders, where every experiment has its own folder denoted by `run_name`.
-We might want to re-run a specific experiment, and for this reason every time we run it, `forge` creates a folder, whose name is an integral number - the number of this run.
+`results_dir` is the top-level directory containing potentially many experiment-specific folders, where every experiment has a separate folder denoted by `run_name`.
+We might want to re-run a specific experiment, and for this reason, every time we run it, `forge` creates a folder, whose name is an integral number - the number of this run.
 It starts at one and gets incremented every time we start a new run of the same experiment.
 Instead of starting a new run, we can also resume the last one by passing a flag.
-In this case, we do not create a new folder for it, but just use the highest-numbered folder and load the latest model snapshot.
+In this case, we do not create a new folder for it, but use the highest-numbered folder and load the latest model snapshot.
 
 
 First, we need to import `forge.experiment_tools` and define the following flags.
@@ -197,7 +197,7 @@ flags.DEFINE_string('run_name', 'test_run', 'Name of this job. Results will be s
 flags.DEFINE_boolean('resume', False, 'Tries to resume a job if True.')
 ```
 
-We can then parse the flags and initialize our checkpoint.
+We can then parse the flags and initialise our checkpoint.
 ```python
 config = forge.config()  # parse flags
 
@@ -208,13 +208,13 @@ logdir, resume_checkpoint = fet.init_checkpoint(logdir, config.data_config, conf
 `fet.init_checkpoint` does a few useful things:
   1. Creates the directory structure mentioned above.
   2. Copies the data and model config files to the checkpoint folder.
-  3. Stores all configuration flags **and the hash of the current git commit (if we're in a git repo, very useful for reproducibility)** in `flags.json`. or restores flags if `restore` was `True`.
+  3. Stores all configuration flags **and the hash of the current git commit (if we're in a git repo, very useful for reproducibility)** in `flags.json`, or restores flags if `restore` was `True`.
   4. Figures out whether there exists a model snapshot file that should be loaded.
 
 `logdir` is the path to our checkpoint folder and evaluates to `results_dir/run_name/<integer>`.
 `resume_checkpoint` is a path to a checkpoint if `resume` was `True`, typically `results_dir/run_name/<integer>/model.ckpt-<maximum global step>`, or `None` otherwise.
 
-Now we just need to use `logdir` and `resume_checkpoint` to store any logs and model snapshots.
+Now we need to use `logdir` and `resume_checkpoint` to store any logs and model snapshots.
 For example:
 ```python
 ...  # load data/model and do other setup
@@ -247,15 +247,15 @@ data, model, restore_func = load_from_checkpoint(checkpoint_dir, checkpoint_iter
 sess = tf.Session()
 restore_func(sess)
 
-...  # do interesting stuff with the model
+...  # do exciting stuff with the model
 ```
 
 
 ### Working Example
-Code for `forge` is available at [github.com/akosiorek/forge](https://github.com/akosiorek/forge) and a working example is describes in the `README`.
+Code for `forge` is available at [github.com/akosiorek/forge](https://github.com/akosiorek/forge) and a working example is described in the `README`.
 
 # Closing thoughts
-Even though experimental code exhibits very similar structure among experiments, there seems to be no tools to streamline the experimentation process.
+Even though experimental code exhibits very similar structure among experiments, there seem to be no tools to streamline the experimentation process.
 This requires ML practitioners to write thousands of lines of boilerplate code, contributes to many errors and generally slows down research progress.
 `forge` is my attempt at introducing some good practices as well as simplifying the process.
 Hope you can take something from it for your own purposes.
