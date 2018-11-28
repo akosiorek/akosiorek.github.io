@@ -1,8 +1,10 @@
 ---
-layout: draft
+layout: post
 title:  "Forge, or how do you manage your machine learning experiments?"
-date:   2018-10-11 10:15:00 +0000
-categories: notes
+date:   2018-11-28 10:15:00 +0000
+comments: True
+share: True
+categories: ML
 ---
 
 Every time I begin a machine learning (ML) project, I go through more or less the same steps.
@@ -260,5 +262,5 @@ This requires ML practitioners to write thousands of lines of boilerplate code, 
 `forge` is my attempt at introducing some good practices as well as simplifying the process.
 Hope you can take something from it for your own purposes.
 
-<!-- #### Acknowledgements
-I would like to thank [Alex Bewley](http://alex.bewley.ai/) for inspiration, [Adam Goliński](http://adamgol.me/) for discussions about software engineering in ML and [Martin Engelcke](https://ori.ox.ac.uk/ori-people/martin-engelcke/) for his feedback on `forge`. -->
+#### Acknowledgements
+I would like to thank [Alex Bewley](http://alex.bewley.ai/) for inspiration, [Adam Goliński](http://adamgol.me/) for discussions about software engineering in ML and [Martin Engelcke](https://ori.ox.ac.uk/ori-people/martin-engelcke/) for his feedback on `forge`.
