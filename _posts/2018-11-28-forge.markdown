@@ -4,7 +4,7 @@ title:  "Forge, or how do you manage your machine learning experiments?"
 date:   2018-11-28 10:15:00 +0000
 comments: True
 share: True
-categories: ML
+categories: ml
 ---
 
 Every time I begin a machine learning (ML) project, I go through more or less the same steps.
