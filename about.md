@@ -29,7 +29,7 @@ F. B. Fuchs, O. Groth, **A. R. Kosiorek**, A. Bewley, M. Wulfmeier, A. Vedaldi, 
 [J. Lee, Y. Lee, J. Kim, **A. R. Kosiorek**, S. Choi, Y. W. Teh "Set Transformer", _CoRR_, 2018.](https://arxiv.org/abs/1810.00825)
 
 
-[**A. R. Kosiorek**, H. Kim, I. Posner, Y. W. Teh "Sequential Attend, Infer, Repeat: Generative Modelling of Moving Objects", _NIPS_, 2018.](https://arxiv.org/abs/1806.01794) [`code`](https://github.com/akosiorek/sqair)
+[**A. R. Kosiorek**, H. Kim, I. Posner, Y. W. Teh "Sequential Attend, Infer, Repeat: Generative Modelling of Moving Objects", _NIPS_, 2018.](https://arxiv.org/abs/1806.01794) [`code`](https://github.com/akosiorek/sqair), [NIPS spotlight talk](https://www.facebook.com/nipsfoundation/videos/515859272265612/?t=2897), [video](https://youtu.be/-IUNQgSLE0c), [poster](https://drive.google.com/open?id=1HC0FflbWhYd2XtuJMD7qW3jbuOuNEy7T)
 
 [T. A. Le<sup style="color: #B0B0B0;">$$\circ$$</sup>, **A. R. Kosiorek**<sup style="color: #B0B0B0;">$$\circ$$</sup>, N. Siddharth, Y. W. Teh, F. Wood "Revisiting Reweighted Wake-Sleep", _CoRR_, 2018.](https://arxiv.org/abs/1805.10469)
 
