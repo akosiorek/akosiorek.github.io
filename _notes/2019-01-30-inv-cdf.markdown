@@ -1,0 +1,46 @@
+---
+layout: draft
+title:  "Normalizing Flows generalize Inverse Transform Sampling"
+date:   2019-01-30 16:23:0 +0000
+categories: ml
+---
+
+
+Normalizing flows allow us to specify a series of transformations (hence a flow) to transform a random variable (RV) from a simple probability distribution into one from a potentially very complicated distribution.
+The mappings $$f$$ used as a part of the flow have to be invertible, at least in principle, and for the flow to have any practical value, the Jacobian of every transformation has to be cheap to compute.
+See [my previous post](http://akosiorek.github.io/ml/2018/04/03/norm_flows.html) for an overview of flows.
+
+One thing that you cannot do with flows is to evaluate the cumulative distribution function (CDF), even if you can do it for the base distribution. Let $$x \sim p(x)$$ such that $$\Phi(x) = p(X \leq x)$$ is the CDF.
+In a univariate case, transforming $$x$$ with a norm flow yields $$y = f(x)$$ with some invertible function $$f$$, and $$p(y) = p(x)\left(\frac{df(x)}{dx}\right)^{-1}$$.
+Computing $$\Psi(y) = p(Y \leq y)$$, the CDF of y, requires integration, which is intractable in case $$f$$ is complicated and non-linear, as would be the case if it were given by a neural network.
+
+To address this issue, we can parametrize a CDF directly and then use it to derive the density; we can also sample with the inverse transform method. More formally, if $$\Psi(y)$$ is the CDF, then the probability density function (pdf) is given by $$p(y) = \frac{d\Psi(y)}{dy}$$.
+When $$\Psi(y)$$ is given by a neural network with input $$y$$ and output $$s \in [0, 1]$$, the pdf is the gradient of $$s$$ with respect to the input, easily computable by backpropgation.
+We can sample from $$\Psi$$ (or $$p(y)$$) by first sampling $$u \sim \text{Unif}([0, 1])$$ and transforming it as $$y = \Psi^{-1}(u)$$.
+The caveat here is that we need to be able to invert the CDF, which is impossible for a general neural network.
+In this sense, a normalizing flow is a direct way of parametrizing the CDF.
+The difference is, however, that a flow $$f$$ is a function $$f:\mathbb{R} \mapsto \mathbb{R}$$ while the inverse CDF is a function $$\Psi^{-1}: [0, 1] \mapsto \mathbb{R}$$.
+However, if we choose to apply the flow to $$u$$ uniformly-distributed on the unit interval, the pdf takes the form of $$p(y) = p(u) \left(\frac{df(u)}{du}\right)^{-1} = \left(\frac{df(u)}{du}\right)^{-1}$$ since $$\forall_u: p(u) = 1$$.
+If we use the inverse CDF, we have that $$p(y) = p(u) \left(\frac{d\Psi^{-1}(u)}{du}\right)^{-1} = \left(\frac{d\Psi^{-1}(u)}{du}\right)^{-1}$$.
+It follows that $$\Psi^{-1} = f$$.
+
+## Formal Proof
+### Univariate case
+### Multivariate case
+## Learning CDFs directly
+In a recent paper ["Neural Likelihoods via Cumulative Distribution Functions"](https://arxiv.org/abs/1811.00974) Chilinski & Silva learn CDFs directly.
+Why?
+
+## Learning Inverse CDFs directly
+It is also possible to directly learn the inverse CDF as described in [
+Autoregressive Quantile Networks for Generative Modeling](https://arxiv.org/abs/1806.05575) by Ostrovski, Dabney and Munos.
+
+## How to parametrize an invertible Neural Network?
+Interestingly, Huang et. al. arrived at very similar conclusions in [Neural Autoregressive Flows](https://arxiv.org/abs/1804.00779) when they say that the neural net used for transformation takes the role of the CDF (cf. Fig...)
+
+## When and why you should use a CDF-based methods instead of a normalizing flow
+1. when you need to evaluate the CDF
+2. otherwise just use a flow?
+
+#### Acknowledgements
+I would like to thank Anthony Caterini and Juho Lee for fruitful discussions as well as his detailed feedback and numerous remarks on how to improve this post.
