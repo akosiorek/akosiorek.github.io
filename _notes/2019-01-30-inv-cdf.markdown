@@ -83,17 +83,41 @@ The joint density reads as $$p_{xy}(x, y) = \frac{d^2 P_{xy}(x, y)}{dxdy}$$.
 Interestingly, a conditional CDF is equal to
 
 $$
-  P_{xy}(x \mid y) = \int_{-\infty}^x p_{xy}(\tau \mid y) d \tau = \int_{-\infty}^x \frac{p_{xy}(\tau, y)}{p_y(y)} d \tau = \frac{\frac{d P_{xy}(x, y)}{dy}}{p_y(y)}.
+  P_{xy}(x \mid Y = y) = \int_{-\infty}^x p_{xy}(\tau \mid y) d \tau = \int_{-\infty}^x \frac{p_{xy}(\tau, y)}{p_y(y)} d \tau = \frac{\frac{d P_{xy}(x, y)}{dy}}{p_y(y)}. \tag{3}
 $$
 
-I initially thought that a conditional CDF would be the probability that $$X \leq x$$ given that $$Y \leq y$$, but it is conditioned on the particular value of $$y$$.
-It follows that CDFs do not decompose autoregressively, since a product of a conditional CDF and a CDF over its conditioning set is not equal to the joint CDF, contrary to PDFs.
-However, conditional CDFs can still be useful, since we construct a joint PDF by taking the product of first order derivatives of univariate conditional CDFs.
-Therefore, in an autoregressive flow, each transformation corresponds to the inverse of a conditional CDF.
-However, the flow transformation of a multivariate random variable cannot be interpreted as the inverse of a multivariate CDF.
+However, this is not appropriate for an autoregressive decomposition of CDFs of the following form
+
+$$
+  P_{xy}(x, y) = p_{xy}(X \leq x, Y \leq y) = P_{xy}(x \mid y)P_{y}(y). \tag{4}
+$$
+
+It follows that CDFs do decompose autoregressively, but only with inequalities in the conditioning set.
+If we look at autoregressive flows, however, we see that transformations are conditioned on particular values of preceding variables, which corresponds to an inverse CDF conditioned on a particular values, similarly to equation (3).
+We conclude that a flow transformation of a multivariate random variable cannot be interpreted as the inverse of a multivariate CDF.
+
+If we use an invertible neural network, we can learn a free-form invertible CDF that admits density evaluation as well as sampling.
+It seems to be not the case for multivariate settings.
+Can we learn multivariate CDFs in any any other way?
+It turns out that we can, and here's how.
+
+### Learning CDFs directly (WIP)
+In a recent paper ["Neural Likelihoods via Cumulative Distribution Functions"](https://arxiv.org/abs/1811.00974) Chilinski & Silva learn CDFs directly.
+Why?
+
+### Learning Inverse CDFs directly (WIP)
+It is also possible to directly learn the inverse CDF as described in [
+Autoregressive Quantile Networks for Generative Modeling](https://arxiv.org/abs/1806.05575) by Ostrovski, Dabney and Munos.
+
+### When and why you should use a CDF-based methods instead of a normalizing flow (WIP)
+1. when you need to evaluate the CDF
+2. otherwise just use a flow?
+
+#### Acknowledgements
+I would like to thank Adam Goliński, Anthony Caterini Juho Lee for fruitful discussions as well as his detailed feedback and numerous remarks on how to improve this post.
 
 
-### A
+<!-- ### A
 
 For some flows, like [Real-NVP](https://arxiv.org/abs/1605.08803) and [Inverse Autoregressive Flow](https://arxiv.org/pdf/1606.04934), the flow can be inverted analytically and we can retrieve the CDF.
 For others, like [Radial Flow](https://arxiv.org/abs/1505.05770) or [Neural Autoregressive Flow (NAF)](https://arxiv.org/abs/1804.00779), the inverse is non-analytic.
@@ -171,20 +195,5 @@ Fortunately, a Toeplitz matrix can be padded with zeros to create a [Circulant m
 Namely, linear systems features a circulant matrix can be solved with Fourier transform.
 This means that we can solve our linear system in $$\operatorname{O}(n\log{n})$$, where $$n$$ is the number of units.
 
-## Learning CDFs directly
-In a recent paper ["Neural Likelihoods via Cumulative Distribution Functions"](https://arxiv.org/abs/1811.00974) Chilinski & Silva learn CDFs directly.
-Why?
-
-## Learning Inverse CDFs directly
-It is also possible to directly learn the inverse CDF as described in [
-Autoregressive Quantile Networks for Generative Modeling](https://arxiv.org/abs/1806.05575) by Ostrovski, Dabney and Munos.
-
 ## How to parametrize an invertible Neural Network?
-Interestingly, Huang et. al. arrived at very similar conclusions in [Neural Autoregressive Flows](https://arxiv.org/abs/1804.00779) when they say that the neural net used for transformation takes the role of the CDF (cf. Fig...)
-
-## When and why you should use a CDF-based methods instead of a normalizing flow
-1. when you need to evaluate the CDF
-2. otherwise just use a flow?
-
-#### Acknowledgements
-I would like to thank Anthony Caterini and Juho Lee for fruitful discussions as well as his detailed feedback and numerous remarks on how to improve this post.
+Interestingly, Huang et. al. arrived at very similar conclusions in [Neural Autoregressive Flows](https://arxiv.org/abs/1804.00779) when they say that the neural net used for transformation takes the role of the CDF (cf. Fig...) -->
