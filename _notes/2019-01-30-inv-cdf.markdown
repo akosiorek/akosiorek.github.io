@@ -1,32 +1,176 @@
 ---
 layout: draft
-title:  "Normalizing Flows generalize Inverse Transform Sampling"
+title:  "Normalizing Flows generalize Inverse Transform Sampling (sort of)"
 date:   2019-01-30 16:23:0 +0000
 categories: ml
 ---
 
 
-Normalizing flows allow us to specify a series of transformations (hence a flow) to transform a random variable (RV) from a simple probability distribution into one from a potentially very complicated distribution.
-The mappings $$f$$ used as a part of the flow have to be invertible, at least in principle, and for the flow to have any practical value, the Jacobian of every transformation has to be cheap to compute.
+Normalizing flows allow specifying a series of transformations (hence a flow) to transform a random variable (RV) from a simple probability distribution into one from a potentially very complicated distribution.
+The mappings $$f$$ used as a part of the flow have to be invertible, at least in principle. Additionally, the Jacobian of every transformation has to be cheap to compute if the flow is to be of any practical value.
 See [my previous post](http://akosiorek.github.io/ml/2018/04/03/norm_flows.html) for an overview of flows.
 
-One thing that you cannot do with flows is to evaluate the cumulative distribution function (CDF), even if you can do it for the base distribution. Let $$x \sim p(x)$$ such that $$\Phi(x) = p(X \leq x)$$ is the CDF.
-In a univariate case, transforming $$x$$ with a norm flow yields $$y = f(x)$$ with some invertible function $$f$$, and $$p(y) = p(x)\left(\frac{df(x)}{dx}\right)^{-1}$$.
-Computing $$\Psi(y) = p(Y \leq y)$$, the CDF of y, requires integration, which is intractable in case $$f$$ is complicated and non-linear, as would be the case if it were given by a neural network.
+Even though flows are useful for constructing complicated distributions, evaluating the corresponding [cumulative distribution function (CDF)](https://en.wikipedia.org/wiki/Cumulative_distribution_function) remains intractable --- even if it is tractable for the base distribution.
+This can be an issue if we are interested in [median (or other quantile) solutions](https://en.wikipedia.org/wiki/Quantile_regression), if we need to [truncate the resulting distribution](https://en.wikipedia.org/wiki/Truncated_distribution) or to perform [hypothesis testing](https://en.wikipedia.org/wiki/Statistical_hypothesis_testing) such as computing a [p-value](https://en.wikipedia.org/wiki/P-value).
 
-To address this issue, we can parametrize a CDF directly and then use it to derive the density; we can also sample with the inverse transform method. More formally, if $$\Psi(y)$$ is the CDF, then the probability density function (pdf) is given by $$p(y) = \frac{d\Psi(y)}{dy}$$.
-When $$\Psi(y)$$ is given by a neural network with input $$y$$ and output $$s \in [0, 1]$$, the pdf is the gradient of $$s$$ with respect to the input, easily computable by backpropgation.
-We can sample from $$\Psi$$ (or $$p(y)$$) by first sampling $$u \sim \text{Unif}([0, 1])$$ and transforming it as $$y = \Psi^{-1}(u)$$.
-The caveat here is that we need to be able to invert the CDF, which is impossible for a general neural network.
-In this sense, a normalizing flow is a direct way of parametrizing the CDF.
-The difference is, however, that a flow $$f$$ is a function $$f:\mathbb{R} \mapsto \mathbb{R}$$ while the inverse CDF is a function $$\Psi^{-1}: [0, 1] \mapsto \mathbb{R}$$.
-However, if we choose to apply the flow to $$u$$ uniformly-distributed on the unit interval, the pdf takes the form of $$p(y) = p(u) \left(\frac{df(u)}{du}\right)^{-1} = \left(\frac{df(u)}{du}\right)^{-1}$$ since $$\forall_u: p(u) = 1$$.
-If we use the inverse CDF, we have that $$p(y) = p(u) \left(\frac{d\Psi^{-1}(u)}{du}\right)^{-1} = \left(\frac{d\Psi^{-1}(u)}{du}\right)^{-1}$$.
-It follows that $$\Psi^{-1} = f$$.
+To see this, let $$x \sim p_x(x)$$ such that $$x \in \mathbb{R}$$ with $$P_x(x) = p_x(X \leq x) = \int_{-\infty}^x p_x(\tau) d \tau$$ the CDF.
+Transforming $$x$$ with a norm flow $$f$$ yields $$y = f(x)$$, and
 
-## Formal Proof
-### Univariate case
+$$
+  p_y(y) = p(x)\left( \frac{df(x)}{dx} \right)^{-1}\tag{1}.
+$$
+
+To compute $$P_y(y)$$, the CDF of y, one needs to evaluate
+
+$$
+  p_y(Y \leq y) = \int_{-\infty}^y p_y(\tau) d \tau = \int_{-\infty}^{f^{-1}(y)} p_x(\tau) \left( \frac{df(\tau)}{d\tau} \right)^{-1} d \tau.
+$$
+
+This involves integrating the derivative of $$f$$, which is intractable in case $$f$$ is complicated and non-linear, as is the case if $$f$$ is parametrized by a neural network.
+
+In what follows, we will delve into the fact that normalizing flow is a generalization of [inverse transform sampling](https://en.wikipedia.org/wiki/Inverse_transform_sampling).
+Firstly, we will develop proofs for univariate and multivariate cases.
+The proofs are constructive and provide a way of constructing a family of parametric CDFs by minimally modifying existing normalizing flow architectures.
+Secondly, we will go through three recent papers that propose related ideas.
+Finally, we will try to develop a more general invertible neural networks which addresses some of the shortcomings of discussed papers.
+Enjoy!
+
+### What does make a CDF?
+Let $$X \in \mathbb{X} \subset \mathbb{R}$$ be a random variable.
+The [CDF is defined](https://en.wikipedia.org/wiki/Cumulative_distribution_function) as the probability that $$X$$ will take a value smaller or equal than some other value $$x \in \mathbb{X}$$.
+Here, we are interested in what properties should a function $$F: \mathbb{X} \mapsto [0, 1]$$ have to be considered a CDF.
+$$F$$ is a CDF if:
+  1. $$F$$ is non-decreasing,
+  2. $$F$$ is right-continuous,
+  3. $$\lim_{x \to -\infty} F(x) = 0$$ and $$\lim_{x \to \infty} F(x) = 1$$.
+
+It might be interesting that a derivative of such a function always results in a valid probability density function $$f(x) = \frac{dF(x)}{dx}$$, $$f: \mathbb{R} \mapsto \mathbb{R}_+$$ and $$f$$ integrates to one.
+Normalizing flows are strictly monotonic by construction, which satisfies property 1. while also being stronger.
+Property 2. is satisfied as long as parameter values are bounded and typically simple regularization like L2 is sufficient to guarantee this.
+Property 3. follows from monotonicity and the fact that flows are defined on the space of real numbers $$\mathbb{R}$$.
+Specifically, a monotonic function has to reach its lower limit when evaluated at negative infinity and its upper limit when evaluated at positive infinity.
+However, since normalizing flows typically map to $$\mathbb{R}$$ and not $$[0, 1]$$, they are not CDFs per se.
+
+### Normalazing Flows and Inverse Transform Sampling
+If we know a CDF $$P_y(y)$$ and we can invert it analytically, we can sample from the corresponding distribution by first sampling a random number uniformly from a unit interval $$u \sim \operatorname{U}([0, 1]) = p_u(u)$$ and transforming it as $$y = P_y^{-1}(u)$$.
+We can use [the change of variables rule](https://en.wikipedia.org/wiki/Probability_density_function#Dependent_variables_and_change_of_variables) to show that the pdf of this new variable is in fact equal to $$p_y(y)$$. Specifically, let $$q_y(y)$$ be the new density, then
+
+$$
+  q_y(y) = p_u(u) \left( \frac{P_y^{-1}(u)}{du} \right)^{-1} = \left( \frac{P_y^{-1}(u)}{du} \right)^{-1} = \frac{P_y(y)}{dy} = p_y(y) \tag{2},
+$$
+
+since $$\forall_u: p_u(u) = 1$$ and, due to the [inverse function theorem](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant#Inverse), for any invertible function the derivative of its inverse is equal to the reciprocal of the derivative of the original function.
+This is remarkably similar to equation (1), with the difference that in equation (2) the base density is always uniform and supported on $$[0, 1]$$.
+We see that the inverse CDF in (2) takes the role of the normalizing flow $$f$$ in (1).
+What follows is that a normalizing flow whose input domain is constrained to be the unit interval is, in fact, the inverse CDF of some distribution.
+Additionally, a composition of an inverse CDF with a normalizing flow is a valid inverse CDF.
+
+The above holds only for one-dimensional random variables.
+Inverse transform sampling does not work in the multivariate regime, and so we need to derive this case separately.
+
 ### Multivariate case
+A multivariate CDF is a non-invertible function $$P_{\mathbf{x}}: \mathbb{R}^d \mapsto [0, 1]$$ is defined as
+
+$$
+  P_{\mathbf{x}}\left(\mathbf{x}\right) = P_{\mathbf{x}} \left( X_1 \leq x_1, \dots, X_d \leq x_d \right).
+$$
+
+How does this relate to normalizing flows?
+We will focus on a two-dimensional random variable and autoregressive flows such as the [Inverse Autoregressive Flow (IAF)](https://arxiv.org/pdf/1606.04934) and [Neural Autoregressive Flow (NAF)](https://arxiv.org/abs/1804.00779), but it is easy to generalize this analysis to a general multivariate case.
+
+Let $$x, y \in \mathbb{R}$$ and $$P_{xy}: \mathbb{R}^2 \mapsto [0, 1]$$.
+The joint density reads as $$p_{xy}(x, y) = \frac{d^2 P_{xy}(x, y)}{dxdy}$$.
+Interestingly, a conditional CDF is equal to
+
+$$
+  P_{xy}(x \mid y) = \int_{-\infty}^x p_{xy}(\tau \mid y) d \tau = \int_{-\infty}^x \frac{p_{xy}(\tau, y)}{p_y(y)} d \tau = \frac{\frac{d P_{xy}(x, y)}{dy}}{p_y(y)}.
+$$
+
+I initially thought that a conditional CDF would be the probability that $$X \leq x$$ given that $$Y \leq y$$, but it is conditioned on the particular value of $$y$$.
+It follows that CDFs do not decompose autoregressively, since a product of a conditional CDF and a CDF over its conditioning set is not equal to the joint CDF, contrary to PDFs.
+However, conditional CDFs can still be useful, since we construct a joint PDF by taking the product of first order derivatives of univariate conditional CDFs.
+Therefore, in an autoregressive flow, each transformation corresponds to the inverse of a conditional CDF.
+However, the flow transformation of a multivariate random variable cannot be interpreted as the inverse of a multivariate CDF.
+
+
+### A
+
+For some flows, like [Real-NVP](https://arxiv.org/abs/1605.08803) and [Inverse Autoregressive Flow](https://arxiv.org/pdf/1606.04934), the flow can be inverted analytically and we can retrieve the CDF.
+For others, like [Radial Flow](https://arxiv.org/abs/1505.05770) or [Neural Autoregressive Flow (NAF)](https://arxiv.org/abs/1804.00779), the inverse is non-analytic.
+However, it is possible to construct a class of analytically-invertible NAFs.
+
+### Neural Autoregressive Flows (NAF)
+NAF are very related to the Inverse Autoregressive Flow, where the only difference is the kind of used transformation.
+Let $$\mathbf{z}^i \in \mathbb{R}^d$$, $$i=0, \dots, k$$, where $$\mathbf{z}^0 \sim p_0(\mathbf{z})$$ and $$z^i_j = f_i(z^{i-1}_{1:j})$$.
+The transformation $$f_i$$ can be performed in parallel for all dimensions of $$\mathbf{z}^i$$ and can be efficiently parametrized by a masked neural net such as [MADE](https://arxiv.org/abs/1502.03509).
+The difference is that IAF is restricted to affine transformations of the following form
+
+$$
+  f_i(z^{i-1}_{1:j}) = \frac{z^{i-1}_j + \operatorname{\mu} \left( z^{i-1}_{1:j-1} \right)}{\operatorname{\sigma} \left( z^{i-1}_{1:j-1} \right)},
+$$
+
+while NAF allows $$f_i$$ to be a parametric strictly monotonic function $$g: \mathbb{R} \mapsto \mathbb{R}$$, whose parameters are a function of $$z^{i-1}_{1:j-1}$$.
+That is,
+
+$$
+  f_i(z^{i-1}_{1:j}) = \operatorname{g} \left( z^{i-1}_j; \operatorname{\theta} (z^{i-1}_{1:j-1}) \right).
+$$
+
+The Jacobian of both transformation is triangular, so its determinant is equal to the product of diagonal entries.
+For IAF, we have $$\sigma^{-1}$$ on the diagonal, while for NAF it is the element-wise derivative of $$g$$.
+This means that NAFs are more computationally expensive, but also more expressive, see [figure 1](#iaf_vs_naf).
+
+<figure>
+  <a name="iaf_vs_naf"></a>
+  <img style="display: box; margin: auto" src="{{site.url}}/resources/naf.png" alt="IAF vs NAF"/>
+  <figcaption align='center'>
+    <b>Fig 1.</b> The effect of IAF (top) and NAF (bottom). Left column shows the input density x. Right column shows the output density y, and the middle column shows the function f. IAF has constant gradient and only scales the base distribution. NAF's gradient depends on the input and it can dramatically reshape the input density: when the gradient of f is smaller than one, the corresponding area is contracted, and when it is greater than one, the corresponding area is expanded. Inflection points in f can induce additional modes in the resulting density. The figure comes from the <a href="https://arxiv.org/abs/1804.00779">NAF paper</a>.
+  </figcaption>
+</figure>
+
+Function $$f$$ takes the role of an inverse CDF in both IAF and NAF.
+NAF has the disadvantage that the functions used in the paper are not invertible analytically and hence NAF cannot be used for density estimation.
+Generally, however, constructing an invertible neural network is possible.
+While not practically useful for density estimation in autoregressive models such as IAF or NAF (it cannot be parallelized and is therefore prohibitively expensive) it could be still useful for learning general distributions.
+
+### Fully-invertible Neural Networks
+While Real-NVP and IAF both define invertible neural networks, they are insufficient for our purposes due to their simplicity.
+Recent [invertible RevNet paper](https://arxiv.org/abs/1802.07088) proposes a RealNVP-like neural net for general-purpose deep learning, but it suffers from the same issue.
+[FFJORD](http://www.cs.toronto.edu/~duvenaud/), a continuous flow, could be used for this purpose, but it is terribly inefficient (it took 5 days with 6 GPUs for density estimation on MNIST).
+I haven't seen any recent papers on general-purpose invertible neural networks, and the only paper I found is "[One-Step Neural Network Inversion with PDF
+Learning and Emulation](http://leemon.com/papers/2005bsi.pdf)" from 2005 IEEE neural net conference.
+
+Why are there no more papers about the subject?
+The 2005 paper proposes a straightforward method of building invertible MLPs, and I will describe it shortly.
+It should be straightforward to construct an invertible CNN given the same concept and ideas from iRevNet, plus some ideas from numerical linear algebra.
+Here we go.
+
+#### Invertible MLP
+For a neural net to be invertible, it needs to have the same number of inputs and outputs, and the number of units anywhere in the network cannot exceed the number of outputs.
+If these constraints are met, we can easily construct an invertible MLP as a sequence of square matrix multiplications and invertible element-wise non-linearities.
+In this case, inverse is computing by inverting the non-linearities and multiplying by inverse weight-matrices, layer by layer, starting from the end.
+There are two issues:
+1. Inverting a matrix is an $$O(d^3)$$ operation, where $$d$$ is the dimensionality.
+2. Inverse is defined only for full-rank matrices, and it is possible that some of the weight matrices might become singular during training.
+
+Issue 1. can be circumvented by solving the problem approximately instead of exactly and by clever parametrisation of weight matrices.
+Firstly, we don't have to explicitly invert weight matrices.
+What we need is the solution of a linear equation $$W\mathbf{x} = \mathbf{y}$$.
+An approximate solution can often be much more efficient to compute than the exact solution, and it doesn't matter if the solution is exact or not if the approximation error is close to machine precision.
+Moreover, any matrix can be decomposed into a pair of lower- and upper-triangular matrices by e.g. [LU decomposition](https://en.wikipedia.org/wiki/LU_decomposition).
+Consequently, we can obtain any matrix by a product of two triangular matrices, and it turns out that triangular linear systems are much cheaper to solve.
+[Traditional algorithms](https://en.wikipedia.org/wiki/Triangular_matrix#Forward_and_back_substitution) are sequential, but [parallel alternatives](https://arxiv.org/abs/1710.04985) also exist.
+
+Issue 2. can be tackled by appropriate [regularization](https://en.wikipedia.org/wiki/Tikhonov_regularization) (damping) and [preconditioning](https://en.wikipedia.org/wiki/Preconditioner).
+In practice, sufficient weight-decay applied to diagonal entries of weight matrices should be enough to prevent rank deficiency.
+
+#### Invertible CNNs
+With CNNs he situation is a bit more tricky.
+While it is easy to see that a convolution corresponds to matrix multiplication with a [Toeplitz matrix](https://en.wikipedia.org/wiki/Toeplitz_matrix), it is impractical to instantiate such a matrix due to its huge dimensions compared to number of units in a conv filter.
+Fortunately, a Toeplitz matrix can be padded with zeros to create a [Circulant matrix](https://en.wikipedia.org/wiki/Circulant_matrix), and the latter has an interesting property.
+Namely, linear systems features a circulant matrix can be solved with Fourier transform.
+This means that we can solve our linear system in $$\operatorname{O}(n\log{n})$$, where $$n$$ is the number of units.
+
 ## Learning CDFs directly
 In a recent paper ["Neural Likelihoods via Cumulative Distribution Functions"](https://arxiv.org/abs/1811.00974) Chilinski & Silva learn CDFs directly.
 Why?
