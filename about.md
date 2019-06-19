@@ -10,6 +10,7 @@ Hi, I'm Adam.
 I'm passionate about machine learning, particularly machine reasoning and generative modelling.
 I'm really into time-series, attention, external memory and VAEs.
 * I'm a PhD Candidate at the University of Oxford, where I'm working with [Ingmar Posner](http://ori.ox.ac.uk/mrg_people/ingmar-posner/) and [Yee Whye Teh](https://www.stats.ox.ac.uk/~teh/).
+* I internet at [Google Brain]() in Toronto with [Geoff Hinton](http://www.cs.toronto.edu/~hinton/) and [Sara Sabour](https://scholar.google.ca/citations?user=l8wQ39EAAAAJ&hl=en), where I developed a new version of Capsule Networks.
 * I interned at [DeepMind](https://deepmind.com/), where I worked with [Danilo J. Rezende](https://scholar.google.co.uk/citations?user=UGlyhFMAAAAJ&hl=en).
 * I received an MSc in Computational Science & Engineering from the Technical University of Munich, where I worked on VAEs for [Arm Movement Prediction](http://brml.org/positions/master-thesis-arm-movement-prediction/) with [Patrick van der Smagt](http://brml.org/people/smagt/).
 
@@ -18,15 +19,17 @@ I am always looking for exciting research and professional opportunities, so fee
 
 In my free time I read lots of books, train calithenics, lift heavy weights and hike mountains.
 
-[My CV (updated 10/2018)](../resources/cv_adam_kosiorek.pdf)
+[My CV (updated 06/2019)](../resources/cv_adam_kosiorek.pdf)
 
 <div style="margin: 150px;"></div>
 
 #### Publications
 ----------------
-F. B. Fuchs, O. Groth, **A. R. Kosiorek**, A. Bewley, M. Wulfmeier, A. Vedaldi, I. Posner "Learning Physics with Neural Stethoscopes", _NeurIPS_ workshop on Modeling the Physical World: Learning, Perception, and Control, 2018.
+[**A. R. Kosiorek**, S. Sabour, Y. W. Teh, G. E. Hinton "Stacked Capsule Autoencoders", _CoRR_, 2019.](https://arxiv.org/abs/1906.06818)
 
-[J. Lee, Y. Lee, J. Kim, **A. R. Kosiorek**, S. Choi, Y. W. Teh "Set Transformer", _CoRR_, 2018.](https://arxiv.org/abs/1810.00825)
+[J. Lee, Y. Lee, J. Kim, **A. R. Kosiorek**, S. Choi, Y. W. Teh "Set Transformer", _ICML_, 2019.](https://arxiv.org/abs/1810.00825)
+
+F. B. Fuchs, O. Groth, **A. R. Kosiorek**, A. Bewley, M. Wulfmeier, A. Vedaldi, I. Posner "Learning Physics with Neural Stethoscopes", _NeurIPS_ workshop on Modeling the Physical World: Learning, Perception, and Control, 2018.
 
 
 [**A. R. Kosiorek**, H. Kim, I. Posner, Y. W. Teh "Sequential Attend, Infer, Repeat: Generative Modelling of Moving Objects", _NeurIPS_, 2018.](https://arxiv.org/abs/1806.01794) [`code`](https://github.com/akosiorek/sqair), [`NeurIPS spotlight talk`](https://www.facebook.com/nipsfoundation/videos/515859272265612/?t=2897), [`video`](https://youtu.be/-IUNQgSLE0c), [`poster`](https://drive.google.com/open?id=1HC0FflbWhYd2XtuJMD7qW3jbuOuNEy7T)
