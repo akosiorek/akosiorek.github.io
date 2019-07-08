@@ -10,7 +10,7 @@ Hi, I'm Adam.
 I'm passionate about machine learning, particularly machine reasoning and generative modelling.
 I'm really into time-series, attention, external memory and VAEs.
 * I'm a PhD Candidate at the University of Oxford, where I'm working with [Ingmar Posner](http://ori.ox.ac.uk/mrg_people/ingmar-posner/) and [Yee Whye Teh](https://www.stats.ox.ac.uk/~teh/).
-* I internet at [Google Brain]() in Toronto with [Geoff Hinton](http://www.cs.toronto.edu/~hinton/) and [Sara Sabour](https://scholar.google.ca/citations?user=l8wQ39EAAAAJ&hl=en), where I developed a new version of Capsule Networks.
+* I interned at [Google Brain]() in Toronto with [Geoff Hinton](http://www.cs.toronto.edu/~hinton/) and [Sara Sabour](https://scholar.google.ca/citations?user=l8wQ39EAAAAJ&hl=en), where I developed a new version of Capsule Networks.
 * I interned at [DeepMind](https://deepmind.com/), where I worked with [Danilo J. Rezende](https://scholar.google.co.uk/citations?user=UGlyhFMAAAAJ&hl=en).
 * I received an MSc in Computational Science & Engineering from the Technical University of Munich, where I worked on VAEs for [Arm Movement Prediction](http://brml.org/positions/master-thesis-arm-movement-prediction/) with [Patrick van der Smagt](http://brml.org/people/smagt/).
 
