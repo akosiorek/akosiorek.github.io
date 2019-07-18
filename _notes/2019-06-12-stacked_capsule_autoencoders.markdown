@@ -5,20 +5,6 @@ date:   2019-06-12 15:15:0 +0000
 categories: ML
 ---
 
-<!--
-1. skim the paper and make notes on what's missing or what's confusing
-2. try to make a simple story and focus on the notes from above
-
-  1) object-part relationships are viewpoint invariant
-  2) parts are simpler than whole objects (less variety), and therefore should be easier to detect than whole objects
-  3) once we know about parts, we can use this knowledge to reason about objects
-    - this requires knowing canonical object-part relationships
-  4) here we assume that both object-part relationships and parts can be learned end-to-end
-
-3. sketch sections
-4. write!
--->
-
 Objects play a central role in computer vision and, increasingly, machine learning research.
 With many applications depending on object detection in images and videos, the demand for accurate and efficient algorithms has always been high.
 More generally, knowing about objects is essential for understanding and interacting with our environments.
@@ -34,6 +20,7 @@ Usually, object detection is posed as a supervised learning problem, and modern 
 While modern methods can achieve superhuman performance in object detection, they need to consume staggering amounts of data to do so. This is in stark contrast to kids (or mammals, for that matter), who learn to recognise and localise objects with very little guidance from their seniors.
 It is difficult to say what exactly makes mammals so good at learning, but I can imagine that _self-supervision_ and _inductive biases_ present in their sophisticated computing hardware (brains) both play a huge role.
 These intuitions have led us to develop an [unsupervised version of capsule networks](https://www.google.com/search?q=stacked+capsule+autoencoders&rlz=1C5CHFA_enGB715GB715&oq=stacked+caps&aqs=chrome.0.69i59j69i57j69i60l2j69i61j35i39.4385j1j7&sourceid=chrome&ie=UTF-8), see [Figure 1](#SCA_overview) for an overview, whose inductive biases give rise to object-centric latent representations, which are learned simply by reconstructing input images.
+Simply clustering learned representations allowed us to achieve unsupervised state-of-the-part classification performance on MNIST (98.5%) and SVHN (55%).
 In the reminder of this blog, I will try to explain what those inductive biases are, how they are implemented and what kind of things are possible with the new capsule architecture.
 I will also try to explain how this new version differs from previous versions of [capsule networks](https://openreview.net/forum?id=HJWLfGWRb&noteId=rk5MadsMf).
 
@@ -56,16 +43,7 @@ The problem is exacerbated by the fact that objects are often composed of parts,
 
 
 # Capsules learn equivariant object representations
-<!-- why capsules are a good idea?
-- being equivariant to many things at the same time is difficult
-- equivariance can be learnt to some extent, but this requires tremendous amounts of data, since the model has to see every objects from every possible viewpoint
-- objects are often complicated and can be expressed as compositions of parts
-- part-object relationships are not fixed, generally speaking, but there definitely is correlation between objects and parts; you can think of this as an objet defining some sort of possible configurations of its parts
-- parts are by definition less complicated, so it should be easier to learn to discover them than to discover whole objects, which lowers the complexity of the learning problem
-- this can be done by introducing an explicit inductive bias, which says that objects are composed of parts
-- the goal is to learn equivariant representations for parts, and something that is close-to-invariant for object-part relationships
 
- -->
  <figure id='old_capsules'>
    <img style="display: box; margin: auto" src="{{site.url}}/resources/scae/old_capsules.svg" alt="Capsule Network"/>
    <figcaption align='center'>
@@ -103,7 +81,7 @@ Interestingly, this seems to be in line with human perception, as noted recently
 If you are interested, you can watch the below video for about 2.5 minutes.
 
 <div align='center' style='display: box;'>
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/VsnQf7exv5I" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/VsnQf7exv5I?start=2168" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
 If you did not watch the video, here is a simplified version of it, c.f. [Figure 3](#diamond_square): imagine a square, and tilt it by 45 degrees, look away, and look at it again. Can you see a square? Or does the shape resemble a diamond (rhombus)?
@@ -117,13 +95,18 @@ If the coordinate frame is very different from the usual one, we may have proble
   </figcaption>
 </figure>
 
-
-
 # Why bother?
-talk about results
+I hope I have managed to convince you that learning capsule-like representation is possible.
+Why is it a good idea?
+While we still have to scale the method to complicated real-world imagery, the initial results are quite promising.
+It turns out that the object capsules can learn to specialise to different types of objects.
+When we clustered the presence probabilities of object capsules we found that, to our surprise,  representations of objects from the same class are grouped tightly together.
+Simply looking up the label that examples in a given cluster correspond to resulted in a state-of-the-art classification accuracy on two datasets: MNIST (98.5%) and SVHN (55%).
+We also took a model trained on MNIST and simulated unseen viewpoints by performing affine transformations of the digits, and also achieved state-of-the-art unsupervised performance (92.2%), which shows that learned representations are in fact robust to viewpoint changes.
+Results on Cifar10 are not quite as good, but still promising.
+In future work, we are going to explore more expressive approaches to image reconstruction, instead of fixed templates, and hopefully scale up to more complicated data.
 
 
-I hope I have managed to convince you that learning capsule-like representation is possible, and that it might be a good idea.
 This is the end of high-level intuitions, and we now proceed to some technical descriptions, albeit also high-level ones.
 This might be a good place to stop reading if you are not into that sort of thing.
 
