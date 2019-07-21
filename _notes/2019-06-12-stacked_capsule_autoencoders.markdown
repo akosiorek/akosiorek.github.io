@@ -10,6 +10,13 @@ With many applications depending on object detection in images and videos, the d
 More generally, knowing about objects is essential for understanding and interacting with our environments.
 Usually, object detection is posed as a supervised learning problem, and modern approaches typically involve training a CNN to predict the probability of whether an object exists at a given image location (and maybe the corresponding class), see e.g. [here](https://blog.athelas.com/a-brief-history-of-cnns-in-image-segmentation-from-r-cnn-to-mask-r-cnn-34ea83205de4).
 
+While modern methods can achieve superhuman performance in object detection, they need to consume staggering amounts of data to do so. This is in stark contrast to kids (or mammals, for that matter), who learn to recognize and localize objects with very little guidance.
+It is difficult to say what exactly makes mammals so good at learning, but I can imagine that _self-supervision_[^selfsupervised] and _inductive biases_ present in their sophisticated computing hardware (i.e. brains) both play a huge role.
+These intuitions have led us to develop an [unsupervised version of capsule networks](https://arxiv.org/abs/1906.06818), see [Figure 1](#SCA_overview) for an overview, whose inductive biases give rise to object-centric latent representations, which are learned in a self-supervised way---simply by reconstructing input images.
+Clustering learned representations was enough to allow us to achieve unsupervised state-of-the-art classification performance on MNIST (98.5%) and SVHN (55%).
+In the remainder of this blog, I will try to explain what those inductive biases are, how they are implemented and what kind of things are possible with this new capsule architecture.
+I will also try to explain how this new version differs from previous versions of [capsule networks](https://openreview.net/forum?id=HJWLfGWRb).
+
 <figure id='SCA_overview'>
   <img style="display: box; margin: auto" src="{{site.url}}/resources/scae/blocks_v4.svg" alt="SCAE"/>
   <figcaption align='center'>
@@ -17,20 +24,16 @@ Usually, object detection is posed as a supervised learning problem, and modern 
   </figcaption>
 </figure>
 
-While modern methods can achieve superhuman performance in object detection, they need to consume staggering amounts of data to do so. This is in stark contrast to kids (or mammals, for that matter), who learn to recognize and localize objects with very little guidance.
-It is difficult to say what exactly makes mammals so good at learning, but I can imagine that _self-supervision_ and _inductive biases_ present in their sophisticated computing hardware (i.e. brains) both play a huge role.
-These intuitions have led us to develop an [unsupervised version of capsule networks](https://arxiv.org/abs/1906.06818), see [Figure 1](#SCA_overview) for an overview, whose inductive biases give rise to object-centric latent representations, which are learned in a self-supervised way---simply by reconstructing input images.
-Simply clustering learned representations allowed us to achieve unsupervised state-of-the-art classification performance on MNIST (98.5%) and SVHN (55%).
-In the remainder of this blog, I will try to explain what those inductive biases are, how they are implemented and what kind of things are possible with this new capsule architecture.
-I will also try to explain how this new version differs from previous versions of [capsule networks](https://openreview.net/forum?id=HJWLfGWRb).
-
-
 # Why do we care about equivariances?
 I think it is fair to say that deep learning would not be so popular if not for CNNs and the [2012 AlexNet paper](https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf).
 CNNs learn faster than non-convolutional image models due to (1) local connectivity and (2) parameter sharing across spatial locations.
 The former restricts what can be learned, but is sufficient to learn correlations between nearby pixels, which turns out to be important for images.
 The latter makes learning easier since parameter updates benefit from more signal.
 It also results in _translation equivariance_, which means that, when the input to a CNN is shifted, the output is shifted by an equal amount, while remaining unchanged otherwise.
+Formally, a function $$f(\mathbf{x})$$ is **equivariant** to any transformation $$T \in \mathcal{T}$$ if $$\forall_{T \in \mathcal{T}} Tf(\mathbf{x}) = f(T\mathbf{x})$$.
+That is, applying any transformation to the input of the function has the same effect as applying that transformation to the output of the function.
+Invariance is a related notion, and the function $$f$$ is **invariant** if $$\forall_{T \in \mathcal{T}} f(\mathbf{x}) = f(T\mathbf{x})$$---applying transformations to the input does not change the output.
+
 Being equivariant helps with learning and generalization---for example, a model does not have to see the object placed at every possible spatial location in order to learn how to classify it.
 For this reason, it would be great to have neural nets that are equivariant to other affine degrees of freedom like rotation, scale, and shear, but this is not very easy to achieve, see e.g. [group equivariant conv nets](https://arxiv.org/abs/1602.07576).
 
@@ -53,11 +56,13 @@ The problem is exacerbated by the fact that objects are often composed of parts,
    </figcaption>
  </figure>
 
-Instead of building models that are globally equivariant to affine transformations, we can rely on the fact that complicated objects are composed of simpler parts.
+Instead of building models that are globally equivariant to affine transformations, we can rely on the fact that scenes often contain many complicated objects, which in turn are composed of simpler parts.
+<!--  -->
 By definition, parts exhibit less variety in their appearance and shape than full objects, and consequently, they should be easier to learn from raw pixels.
+<!--  -->
 Objects can then be recognized from parts and their poses, given that we can learn how parts come together to form different objects, as in [Figure 2](#old_capsules).
-The caveat here is that we still need to learn a part detector, and it needs to predict part poses (i.e. translation, rotation and scale) too.
-But this _should_ be much simpler than learning a end-to-end object detector with similar capabilities.
+The caveat here is that we still need to learn a part detector, and it needs to predict part poses (i.e. translation, rotation, and scale) too.
+We hypothesize that this _should_ be much simpler than learning an end-to-end object detector with similar capabilities.
 
 Since poses of any entities present in a scene change with the location of an observer (or rather the chosen coordinate system), then a detector that can correctly identify poses of parts produces a viewpoint-equivariant part representation.
 Since object-part relationships do not depend on the particular vantage point, they are viewpoint-invariant.
@@ -108,7 +113,7 @@ We also took a model trained on MNIST and simulated unseen viewpoints by perform
 Results on Cifar10 are not quite as good, but still promising.
 In future work, we are going to explore more expressive approaches to image reconstruction, instead of using fixed templates, and hopefully, scale up to more complicated data.
 
-
+# Technical bits
 This is the end of high-level intuitions, and we now proceed to some technical descriptions, albeit also high-level ones.
 This might be a good place to stop reading if you are not into that sort of thing.
 
@@ -120,7 +125,6 @@ Let us start by defining what a _capsule_ is.
 
 We define a _capsule_ as a specialized part of a model that describes an abstract entity, e.g. a part or an object.
 In the following, we will have _object capsules_, which recognize objects from parts, and _part capsules_, which extract parts and poses from an input image.
-Even though capsules are present only in inference, or the encoding stage, it is useful to introduce them now.
 Let _capsule activation_ be a group of variables output by a single capsule.
 To describe an object, we would like to know (1) whether it exists, (2) what it looks like and (3) where it is located[^1].
 Therefore, for an object capsule $$k$$, its activations consist of (1) a presence probability $$a_k$$, (2) a feature vector $$\mathbf{c_k}$$, and (3) a $$3\times 3$$ pose matrix $$OV_k$$, which represents the geometrical relationship between the object and the viewer (or some central coordinate system).
@@ -133,16 +137,16 @@ To this end, for every object capsule, we learn a set of $$3\times 3$$ transform
 These matrices are encouraged to be constant, although we do allow a weak dependence on the object features $$\mathbf{c}_k$$ to account for small deformations.
 Since any part can belong to only one object, we gather predictions from all object capsules corresponding to the same part capsule and arrange them into a mixture.
 If the model is confident that a particular object should be responsible for a given part, then this will be reflected in the mixing probabilities of the mixture.
-In this case, sampling from the mixture will be similar to just taking argmax over the mixing proportions while while accounting for uncertainty in the assignment.
-Finally, we explain parts by independent Gaussian mixtures; this is a simplifying assumption saying that a choice of a parent for one part should not influence choice of parents for other parts.
+In this case, sampling from the mixture will be similar to just taking argmax over the mixing proportions while also accounting for uncertainty in the assignment.
+Finally, we explain parts by independent Gaussian mixtures; this is a simplifying assumption saying that a choice of a parent for one part should not influence the choice of parents for other parts.
 
 <figure id='mnist_strokes'>
   <div align='center' style="max-width: 800px; display: box; float: margin: auto;">
     <img style="width: 200px; padding: 5px;" src="{{site.url}}/resources/scae/mnist_strokes.png" alt="Object Capsules"/>
     <!--  -->
-    <img style="max-width: 400px; padding:5px; filter:gray; -webkit-filter: grayscale(1); -webkit-filter: grayscale(100%);" src="{{site.url}}/resources/scae/transformed_mnist_strokes.png" alt="Object Capsules"/>
+    <img style="max-width: 320px; padding:5px; filter:gray; -webkit-filter: grayscale(1); -webkit-filter: grayscale(100%);" src="{{site.url}}/resources/scae/transformed_mnist_strokes.png" alt="Object Capsules"/>
     <!--  -->
-    <img style="max-width: 80px; padding:5px; filter:gray; -webkit-filter: grayscale(1); -webkit-filter: grayscale(100%);" src="{{site.url}}/resources/scae/mnist_rec.png" alt="Object Capsules"/>
+    <img style="max-width: 64px; padding:5px; filter:gray; -webkit-filter: grayscale(1); -webkit-filter: grayscale(100%);" src="{{site.url}}/resources/scae/mnist_rec.png" alt="Object Capsules"/>
   </div>
 
   <figcaption align='center'>
@@ -160,7 +164,7 @@ To give an example, a good template for MNIST digits would be a stroke, like in 
 # Where do we get capsule parameters from?
 Above, we define a _generative process_ that can transform object and part capsule activations into images.
 But to obtain capsule activations describing a particular image, we need to run some sort of inference.
-In this case, we will just use neural networks to amortize inference.
+In this case, we will just use neural networks to amortize inference, like in a VAE, ([see this post for more details on VAEs](http://akosiorek.github.io/ml/2018/03/14/what_is_wrong_with_vaes.html)).
 In other words, neural nets will predict capsule activations directly from the image.
 We will do this in two stages.
 Firstly, given the image, we will have a neural net predict pose parameters and presence probabilities for every part from our learnable bank of parts.
@@ -238,9 +242,9 @@ This is also an exciting avenue for future work, together with deeper hierarchie
 If you are interested in the details, I would encourage you to read the original paper: [A. R. Kosiorek, S. Sabour, Y.W. Teh and G. E. Hinton, "Stacked Capsule Autoencoders", arXiv 2019](https://arxiv.org/abs/1906.06818).
 
 # Further reading:
-- [a series of blog posts](https://medium.com/ai³-theory-practice-business/understanding-hintons-capsule-networks-part-i-intuition-b4b559d1159b) explaining previous capsule networks,
-- [the original capsule net paper](http://papers.nips.cc/paper/6975-dynamic-routing-between-capsules) and [the version with EM routing](https://openreview.net/forum?id=HJWLfGWRb),
-- [a recent CVPR tutorial on capsules](https://youtu.be/zRg3IuxaJ6I) and [slides](https://www.crcv.ucf.edu/cvpr2019-tutorial/slides/intro_sara.pptx) by Sara Sabour,
+- [a series of blog posts](https://medium.com/ai³-theory-practice-business/understanding-hintons-capsule-networks-part-i-intuition-b4b559d1159b) explaining previous capsule networks
+- [the original capsule net paper](http://papers.nips.cc/paper/6975-dynamic-routing-between-capsules) and [the version with EM routing](https://openreview.net/forum?id=HJWLfGWRb)
+- [a recent CVPR tutorial on capsules](https://youtu.be/zRg3IuxaJ6I) and [slides](https://www.crcv.ucf.edu/cvpr2019-tutorial/slides/intro_sara.pptx) by Sara Sabour
 
 
 #### Acknowledgements
@@ -251,6 +255,8 @@ This work was done during my internship at Google Brain in Toronto in Geoff Hint
  I also thank [Ali Eslami](http://arkitus.com/research/) and [Danijar Hafner](https://danijar.com/) for helpful discussions.
  Big thanks goes to [Sandy H. Huang](https://people.eecs.berkeley.edu/~shhuang/) who helped with making figures and editing the paper.
  Sandy and [Adam Goliński](http://adamgol.me/) also provided extensive feedback on this post.
+
+[^selfsupervised]: The term "self-supervised" can be confusing. Here, I mean that the model sees only sensory inputs, e.g. images (without human-generated annotations), and the model is trained by optimizing a loss that depends only on this input. In this sense, learning is unsupervised.
 
 [^1]: This is very similar to [Attend, Infer, Repeat (AIR)](https://github.com/akosiorek/attend_infer_repeat), also described in [my previous blog post](http://akosiorek.github.io/ml/2017/09/03/implementing-air.html), as well as [SQAIR](https://github.com/akosiorek/sqair), which extends AIR to videos and allows for unsupervised object detection and tracking.
 
