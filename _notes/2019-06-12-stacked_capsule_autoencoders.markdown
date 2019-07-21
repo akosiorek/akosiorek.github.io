@@ -175,7 +175,7 @@ The first one, Part Capsule Autoencoder (PCAE), detects parts and recombines the
 The second one, Object Capsule Autoencoder (OCAE), organizes parts into objects.
 Below, we describe their architecture and some of our design choices.
 
-## Inferring parts and poses
+#### Inferring parts and poses
 
 <figure>
   <img style="max-width: 650px; display: box; margin: auto" src="{{site.url}}/resources/scae/part_capsule_ae.svg" alt="Part Capsules"/>
@@ -195,7 +195,7 @@ This is similar to global-average pooling, but allows the model to focus on a sp
 We can then use part presence probabilities and part poses to select and affine-transform learned parts, and assemble them into an image.
 Every transformed part is treated as a spatial Gaussian mixture component, and we train PCAE by maximizing the log-likelihood under this mixture.
 
-## Organizing parts into objects
+#### Organizing parts into objects
 
 <figure>
   <img style="max-width: 500px; display: box; margin: auto;" src="{{site.url}}/resources/scae/object_capsule_ae.svg" alt="Object Capsules"/>
@@ -246,6 +246,9 @@ If you are interested in the details, I would encourage you to read the original
 - [the original capsule net paper](http://papers.nips.cc/paper/6975-dynamic-routing-between-capsules) and [the version with EM routing](https://openreview.net/forum?id=HJWLfGWRb)
 - [a recent CVPR tutorial on capsules](https://youtu.be/zRg3IuxaJ6I) and [slides](https://www.crcv.ucf.edu/cvpr2019-tutorial/slides/intro_sara.pptx) by Sara Sabour
 
+#### Footnotes
+* footnotes will be placed here. This line is necessary
+{:footnotes}
 
 #### Acknowledgements
 This work was done during my internship at Google Brain in Toronto in Geoff Hinton's team. I would like to thank my collaborators:
