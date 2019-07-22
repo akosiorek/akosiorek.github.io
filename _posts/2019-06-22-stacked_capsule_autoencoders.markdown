@@ -259,7 +259,7 @@ This work was done during my internship at Google Brain in Toronto in Geoff Hint
  [Geoff Hinton](http://www.cs.toronto.edu/~hinton/).
  I also thank [Ali Eslami](http://arkitus.com/research/) and [Danijar Hafner](https://danijar.com/) for helpful discussions.
  Big thanks goes to [Sandy H. Huang](https://people.eecs.berkeley.edu/~shhuang/) who helped with making figures and editing the paper.
- Sandy and [Adam Goliński](http://adamgol.me/) also provided extensive feedback on this post.
+ Sandy, [Adam Goliński](http://adamgol.me/) and [Martin Engelcke](https://ori.ox.ac.uk/ori-people/martin-engelcke/)  provided extensive feedback on this post.
 
 [^selfsupervised]: The term "self-supervised" can be confusing. Here, I mean that the model sees only sensory inputs, e.g. images (without human-generated annotations), and the model is trained by optimizing a loss that depends only on this input. In this sense, learning is unsupervised.
 
