@@ -89,10 +89,11 @@ A potential disadvantage is that, even though the latent code might be viewpoint
 Interestingly, this seems to be in line with human perception, as noted recently by [Geoff Hinton in his Turing Award lecture](https://youtu.be/VsnQf7exv5I?t=2167), where he uses a thought experiment to illustrate this.
 If you are interested, you can watch the below video for about 2.5 minutes.
 
-<div align='center' style='display: box;'>
+<!-- <div align='center' style='display: box;'> -->
+<div class="videoWrapper">
   <iframe width="560" height="315" src="https://www.youtube.com/embed/VsnQf7exv5I?start=2168" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
-
+<!-- <br> -->
 Here is a simplified version of the example in the video, see [Figure 3](#diamond_square): imagine a square, and tilt it by 45 degrees, look away, and look at it again. Can you see a square? Or does the shape resemble a diamond?
 Humans tend to impose coordinate frames on the objects they see, and the coordinate frame is one of the features that let us recognize the objects.
 If the coordinate frame is very different from the usual one, we may have problems recognizing the correct shape.
