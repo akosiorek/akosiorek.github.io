@@ -10,10 +10,10 @@ categories: ML
 Objects play a central role in computer vision and, increasingly, machine learning research.
 With many applications depending on object detection in images and videos, the demand for accurate and efficient algorithms is high.
 More generally, knowing about objects is essential for understanding and interacting with our environments.
-Usually, object detection is posed as a supervised learning problem, and modern approaches typically involve training a CNN to predict the probability of whether an object exists at a given image location (and maybe the corresponding class), see e.g. [here](https://blog.athelas.com/a-brief-history-of-cnns-in-image-segmentation-from-r-cnn-to-mask-r-cnn-34ea83205de4).
+Usually, object detection is posed as a supervised learning problem, and modern approaches typically involve training a CNN to predict the likelihood of whether an object exists at a given image location (and maybe the corresponding class), see e.g. [here](https://blog.athelas.com/a-brief-history-of-cnns-in-image-segmentation-from-r-cnn-to-mask-r-cnn-34ea83205de4).
 
-While modern methods can achieve superhuman performance in object detection, they need to consume staggering amounts of data to do so. This is in stark contrast to kids (or mammals, for that matter), who learn to recognize and localize objects with very little guidance.
-It is difficult to say what exactly makes mammals so good at learning, but we can imagine that _self-supervision_[^selfsupervised] and [_inductive biases_](https://en.wikipedia.org/wiki/Inductive_bias) present in their sophisticated computing hardware (i.e. brains) both play a huge role.
+While modern methods can achieve human-like performance in object recognition, they need to consume staggering amounts of data to do so. This is in stark contrast to mammals, who learn to recognize and localize objects with no supervision.
+It is difficult to say what exactly makes mammals so good at learning, but we can imagine that _self-supervision_[^selfsupervised] and [_inductive biases_](https://en.wikipedia.org/wiki/Inductive_bias) present in their sophisticated computing hardware (or rather 'wetware'; that is brains) both play a huge role.
 These intuitions have led us to develop an [unsupervised version of capsule networks](https://arxiv.org/abs/1906.06818), see [Figure 1](#SCA_overview) for an overview, whose inductive biases give rise to object-centric latent representations, which are learned in a self-supervised way---simply by reconstructing input images.
 Clustering learned representations was enough to allow us to achieve unsupervised state-of-the-art classification performance on MNIST (98.5%) and SVHN (55%).
 In the remainder of this blog, I will try to explain what those inductive biases are, how they are implemented and what kind of things are possible with this new capsule architecture.
@@ -39,11 +39,11 @@ Invariance is a related notion, and the function $$f$$ is **invariant** if $$\fo
 Being equivariant helps with learning and generalization---for example, a model does not have to see the object placed at every possible spatial location in order to learn how to classify it.
 For this reason, it would be great to have neural nets that are equivariant to other affine degrees of freedom like rotation, scale, and shear, but this is not very easy to achieve, see e.g. [group equivariant conv nets](https://arxiv.org/abs/1602.07576).
 
-Equivariance to different transformations can be learned approximately, but it requires vast data augmentation.
+Equivariance to different transformations can be learned approximately, but it requires vast data augmentation and a considerably higher training cost.
 <!-- following sentence might be not necessary -->
 Augmenting data with random crops or shifts helps even with training translation-equivariant CNNs since these are typically followed by fully-connected layers, which have to learn to handle different positions.
 <!--  -->
-Augmenting data with other affine transformations is not easy, as it would require access to full three-dimensional scene models.
+Other affine transformations[^augment] are not easy to augment with, as they would require access to full three-dimensional scene models.
 Even if scene models were available, we would need to augment data with combinations of different transformations, which would result in an absolutely enormous dataset.
 The problem is exacerbated by the fact that objects are often composed of parts, and it would be best to capture all possible configurations of object parts.
 [Spatial Transformer Networks](https://arxiv.org/abs/1506.02025) and [this followup work](https://arxiv.org/abs/1901.11399) provide one way of learning affine equivariances but do not address the fact that objects can undergo local transformations.
@@ -265,6 +265,8 @@ This work was done during my internship at Google Brain in Toronto in Geoff Hint
 [^selfsupervised]: The term "self-supervised" can be confusing. Here, I mean that the model sees only sensory inputs, e.g. images (without human-generated annotations), and the model is trained by optimizing a loss that depends only on this input. In this sense, learning is unsupervised.
 
 [^simple_posteriors]: Though it is possible for the posterior distribution to be much simpler than either the prior or the likelihood, see e.g. [Hinton, Osindero and Teh, "A Fast Learning Algorithm for Deep Belief Nets". Neural Computation 2006.](http://www.cs.toronto.edu/~fritz/absps/ncfast.pdf)
+
+[^augment]: It is also easy to augment training data with different scales and rotations around the camera axis, but these can be only applied globally. Rotations around other axes require access to 3D scene models.
 
 [^1]: This is very similar to [Attend, Infer, Repeat (AIR)](https://github.com/akosiorek/attend_infer_repeat), also described in [my previous blog post](http://akosiorek.github.io/ml/2017/09/03/implementing-air.html), as well as [SQAIR](https://github.com/akosiorek/sqair), which extends AIR to videos and allows for unsupervised object detection and tracking.
 
