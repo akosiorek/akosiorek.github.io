@@ -1,8 +1,10 @@
 ---
-layout: draft
+layout: post
 title:  "ML Research Job Hunt"
-date:   2018-03-01 15:15:0 +0000
-categories: notes
+date:   2019-12-29 15:49:0 +0000
+comments: True
+share: True
+categories: ML
 ---
 # ML Research Job Hunt
 
@@ -11,7 +13,7 @@ Even though I tried to remain active in my research and fulfil my other PhD obli
 Yes, a job hunt is a full-time activity; it not only takes a lot of time but is intense and can be very stressful.
 Now that I am back to writing my thesis, many people asked me to share my job hunt experience, and it's an excellent opportunity to procrastinate!
 
-Before starting my job hunt I extensively talked to fellow PhD students and new starters at DeepMind, Brain, and FAIR to find out their interview and negotiation experience, and to learn about compensation landscapes at these places.
+Before starting my job hunt I extensively talked to fellow PhD students and new starters at DeepMind, Brain, and FAIR to find out about their interview and negotiation experience, and to learn about compensation landscapes at these places.
 I applied to quite a few companies, some of which were not interested (e.g. FAIR and Netflix--both said I am too junior) and some that did not get back to me at all (Baidu, Alibaba). In the end, I interviewed with Adobe, Apple, CuriousAI, DeepMind (internship), Google Brain (internship + full-time conversion), Google Health, Graphcore, OpenAI, Salesforce, and Twitter.
 Finally, I decided to take the Research Scientist role at DeepMind, where I will be working with [Danilo Rezende](https://danilorezende.com/about/).
 
@@ -22,14 +24,14 @@ I expect that many job hunts might look similar, but it will all depend on your 
 The majority of the PhD students I know either did not put any effort into the job hunt and accepted the first offer they got, or did interview at a few companies but then took the initial offer from the company they liked the most.
 
 At first glance, there is nothing wrong with it.
-You love machine learning, you're excited to start working on it again, and with initial offers being several times higher than a typical PhD stipend, you think that you can just accept it and start working.
+You love machine learning, you're excited to start working on it again, and with initial offers being several times higher than a typical PhD stipend, you think that you should just accept it and start working.
 What you need to remember, though, is that the primary goal of any company out there is making money, and the job of a recruiter is to sign you at the lowest compensation possible.
 ML research staff is exceptionally scarce, however, and in very high demand.
 Big tech companies desperately need you, and you are very likely to be able to get much more than any initial offer might indicate.
 
 My theory is that any offer you have lower-bounds your market value.
 If several companies want to hire you, they will want to outbid each other, which leads to tightening the gap between your offers and your real value.
-Eventually, your offers converge on the market value, at which point any of the companies you talk to stops increasing their offers.
+Eventually, your offers converge on the market value, at which point the companies you talk to stop increasing their offers.
 Tightening the bound requires some preparation and skill, both in securing offers from other companies as well as negotiation.
 
 # Before You Begin
@@ -38,15 +40,15 @@ This should allow you to short-list a few companies that you could see yourself 
 Once you have that list, try to come up with at least a couple of related ones.
 Even if you are not interested in working for them, interviewing there will provide the necessary preparation for the interviews at your target companies.
 
-Once you start applying, everything will progress very quickly.
-I thought that it might take about three months from applications to interviews, but it took only about two weeks, and on-sites followed two weeks after that.
+Once you start applying, everything might progress very quickly, but this depends on the candidate, and the variance can be rather high.
+I thought that it might take about three months from applications to interviews, but in my case it took only about two weeks, and on-sites followed two weeks after that.
 Once you start getting offers, negotiation can take anywhere from two to six weeks.
 The entire process is quite stressful, so I would suggest limiting any responsibilities within that time and just focus on the job search.
 
 Since it might take only about two weeks from applications to your first interviews, you might want to start preparing for interviews way ahead of applying.
 You will need to prepare for:
-  * coding interviews - similar to software engineering jobs, but in my case, these were less complicated but very ML heavy
-  * a job talk - 45 min + Q&A, but it's a good idea to have a shorter version handy, as things tend to get delayed
+  * coding interviews - similar to software engineering jobs, but in my case, these were less complicated with a strong focus on ML,
+  * a job talk - 45 min + Q&A, but it's a good idea to have a shorter version handy, as things tend to get delayed,
   * an answer for "why you want to work here?" - I got asked this question everywhere I interviewed at, sometimes by multiple interviewers
   * some companies might require recommendation letters - for me Adobe was the only one that required them
 
@@ -75,7 +77,7 @@ An on-site can last anywhere between four (Twitter) and 10 (Adobe) hours, and us
   * one or more coding interviews,
   * several research interviews,
   * a job talk,
-  * a soft-skill interview with higher management and/or HR.
+  * a soft-skills interview with higher management and/or HR.
 
 Each interview is typically between 30 and 45 min long, and interviews are often back to back.
 Typically, you will be offered a washroom break in between interviews.
@@ -83,10 +85,10 @@ I took it every single time, even if only to wash my face and spend a minute alo
 Trust me--it goes a long way in a day of ten back-to-back interviews!
 
 When you schedule your on-sites, it is a good idea never to schedule them on consecutive days.
-I would go a step further a suggest scheduling no more than one on-site per week, even if it drags your timeline out.
+I would go a step further and suggest scheduling no more than one on-site per week, even if it drags your timeline out.
 If you are travelling across many time-zones, it might be a good idea to arrive a few days in advance to adjust to the local time zone.
 
-After the on-site, you will hear back from your recruiter within two-ten working days, hopefully with good news.
+After the on-site, you will hear back from your recruiter within two to ten working days, hopefully with good news.
 If you do not hear back from them after four days, it might be a good idea to reach out and ask what is taking so long.
 Getting the actual numbers might require another week or two of waiting, though.
 
@@ -96,9 +98,9 @@ Typically, I would just email them straight after the interview and share my imp
 
   or
 
-  > Hi XXX, we've just finished the interview. I think it didn't go that well, as I forgot <some detail>
+  > Hi XXX, we've just finished the interview. I think it didn't go that well, as I forgot (some detail)...
 
-Getting feedback of this kind is helpful for the recruiter, as it allows them better to calibrate the interview feedback.
+Getting feedback of this kind is helpful for the recruiter, as it allows them to better calibrate the interview feedback.
 Once, when I thought that the interviewer was disinterested and inappropriate, I also shared this feedback.
 The recruiter went out of their way to understand what happened and explain the confusion, and I still ended up getting the offer!
 
@@ -106,7 +108,7 @@ The recruiter went out of their way to understand what happened and explain the 
 
 # Negotiations
 Once you start accumulating offers, everything will proceed very quickly.
-The recruiters are on your side: once you passed the interviews, the recruiter's top priority is to sign you.
+The recruiters are on your side: once you pass the interviews, the recruiter's top priority is to sign you.
 They are happy to fight for increasing your compensation package, but it is your job to convince them of your worth.
 For this reason, it literally *pays* to be in good relations with your recruiter;
 it is also a good idea to exchange at least one email or a phone call with every recruiter every week--just to make sure they feel kept in the loop.
@@ -116,6 +118,7 @@ If a recruiter tells you that they are going to make you an offer, and you are o
 In my case, I just told all my recruiters when I was expecting to have all my offers.
 This did delay getting the actual numbers from most of the companies, but it did make negotiations easier.
 No recruiter in their right mind will rescind your offer only because you failed to make a decision until the end of the week, even if they say otherwise.
+The only exception here is when they give you a short deadline (typically 24 hours) after several rounds of back-and-forth--this is to make sure that you do not use the increased offer to improve your counters yet another time.
 
 Once you have numbers from all the companies, you can start negotiating.
 People often say that you should negotiate only with the companies that you might end up working for, hereafter referred to as *alpha* companies, but I disagree.
