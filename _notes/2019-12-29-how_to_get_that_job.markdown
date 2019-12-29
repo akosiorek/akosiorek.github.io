@@ -1,9 +1,9 @@
 ---
-layout: post
+layout: draft
 title: "ML Research Job Hunt"
 date: 2019-12-29 14:49:0 +0000
-comments: True
-share: True
+comments: False
+share: False
 categories: ml
 ---
 <!-- # ML Research Job Hunt -->
@@ -140,7 +140,3 @@ A few books I can recommend on negotiation and communication, which are useful f
   * [Getting to Yes](https://www.goodreads.com/book/show/313605.Getting_to_Yes)
   * [Getting Past No](https://www.goodreads.com/book/show/228331.Getting_Past_No)
   * [Crucial Conversations](https://www.goodreads.com/book/show/15014.Crucial_Conversations)
-
-
-#### Acknowledgements
-I would like to thank [Sandy Huang](https://shhuang.github.io/) for support during my job hunt, as well as for feedback on this post.
