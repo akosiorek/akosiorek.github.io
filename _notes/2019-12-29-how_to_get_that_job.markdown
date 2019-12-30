@@ -8,16 +8,16 @@ categories: ml
 ---
 <!-- # ML Research Job Hunt -->
 
-I am about to finish my PhD, and I have just signed a job contract, after about four months of sending applications, interviewing and negotiating.
+I am about to finish my PhD, and, after about four months of sending applications, interviewing and negotiating,  I have just signed a job contract.
 Even though I tried to remain active in my research and fulfil my other PhD obligations (writing the thesis, say), I had to essentially take a break.
 Yes, a job hunt is a full-time activity; it not only takes a lot of time but is intense and can be very stressful.
 Now that I am back to writing my thesis, many people asked me to share my job hunt experience, and it's an excellent opportunity to procrastinate!
 
 Before starting my job hunt I extensively talked to fellow PhD students and new starters at DeepMind, Brain, and FAIR to find out about their interview and negotiation experience, and to learn about compensation landscapes at these places.
-I applied to quite a few companies, some of which were not interested (e.g. FAIR and Netflix--both said I am too junior) and some that did not get back to me at all (Baidu, Alibaba). In the end, I interviewed with Adobe, Apple, CuriousAI, DeepMind (internship), Google Brain (internship + full-time conversion), Google Health, Graphcore, OpenAI, Salesforce, and Twitter.
+I applied to quite a few companies, some of which were not interested (e.g. FAIR and Netflix--both said I am too junior) and some that did not get back to me at all (Baidu, Alibaba). In the end, I interviewed with Adobe, Apple, [CuriousAI](https://thecuriousaicompany.com/), DeepMind (internship), Google Brain (internship + full-time conversion), Google Health, [Graphcore](https://www.graphcore.ai/), OpenAI, Salesforce, and Twitter.
 Finally, I decided to take the Research Scientist role at DeepMind, where I will be working with [Danilo Rezende](https://danilorezende.com/about/).
 
-In the following, I am trying to distil what I learned, and I describe my own experiences.
+In the following, I am trying to distil what I learned throughout the interview process and from people I talked to, and I describe my own experiences.
 I expect that many job hunts might look similar, but it will all depend on your circumstances. Please take whatever I write with a grain of salt.
 
 # What's Your Worth?
@@ -25,7 +25,7 @@ The majority of the PhD students I know either did not put any effort into the j
 
 At first glance, there is nothing wrong with it.
 You love machine learning, you're excited to start working on it again, and with initial offers being several times higher than a typical PhD stipend, you think that you should just accept it and start working.
-What you need to remember, though, is that the primary goal of any company out there is making money, and the job of a recruiter is to sign you at the lowest compensation possible.
+What you need to remember, though, is that the primary goal of any company out there is making money, and recruiters are incentivised to sign you at the lowest compensation possible.
 ML research staff is exceptionally scarce, however, and in very high demand.
 Big tech companies desperately need you, and you are very likely to be able to get much more than any initial offer might indicate.
 
@@ -37,8 +37,12 @@ Tightening the bound requires some preparation and skill, both in securing offer
 # Before You Begin
 The first questions you should ask yourself before applying for jobs is what it is that you want to do, and what are the things that you care about (people, type of work, growth ability, location, compensation, etc.).
 This should allow you to short-list a few companies that you could see yourself working at.
-Once you have that list, try to come up with at least a couple of related ones.
-Even if you are not interested in working for them, interviewing there will provide the necessary preparation for the interviews at your target companies.
+Once you have that list, try ordering the companies by how much you want to work for them.
+This allows you to interview at the less-preferred companies first, which gives you the preparation you need to perform well at the target companies.
+The ordering will not be perfect--the interviews are a major source of information, and it might turn out that you really want to work at the first company you interview at--but it does increase your chances of performing well at the target companies.
+
+Some people suggest coming up with at least a couple of related companies that you are not necessarily interested in working for.
+This allows you to get more practice, but can be morally questionable.
 
 Once you start applying, everything might progress very quickly, but this depends on the candidate, and the variance can be rather high.
 I thought that it might take about three months from applications to interviews, but in my case it took only about two weeks, and on-sites followed two weeks after that.
@@ -47,7 +51,9 @@ The entire process is quite stressful, so I would suggest limiting any responsib
 
 Since it might take only about two weeks from applications to your first interviews, you might want to start preparing for interviews way ahead of applying.
 You will need to prepare for:
-  * coding interviews - similar to software engineering jobs, but in my case, these were less complicated with a strong focus on ML,
+  * coding interviews - similar to software engineering jobs, but in my case, these were less complicated with a strong focus on ML; one example in my case was to code up k-means in python,
+  * ML, maths and stats interviews - various questions about calculus, probability and optimization, including derivations and proofs,
+  * ML system design - one example was "how you would build a chat bot?"; these are very open-ended,
   * a job talk - 45 min + Q&A, but it's a good idea to have a shorter version handy, as things tend to get delayed,
   * an answer for "why you want to work here?" - I got asked this question everywhere I interviewed at, sometimes by multiple interviewers
   * some companies might require recommendation letters - for me Adobe was the only one that required them
@@ -89,7 +95,7 @@ I would go a step further and suggest scheduling no more than one on-site per we
 If you are travelling across many time-zones, it might be a good idea to arrive a few days in advance to adjust to the local time zone.
 
 After the on-site, you will hear back from your recruiter within two to ten working days, hopefully with good news.
-If you do not hear back from them after four days, it might be a good idea to reach out and ask what is taking so long.
+If you do not hear back from them after four days, it might be a good idea to follow up.
 Getting the actual numbers might require another week or two of waiting, though.
 
 As a side note, I like following up with the recruiters after every single interview.
@@ -117,26 +123,35 @@ Generally, your offers will have no deadlines on them.
 If a recruiter tells you that they are going to make you an offer, and you are only beginning the process with another company, just tell your recruiter about it.
 In my case, I just told all my recruiters when I was expecting to have all my offers.
 This did delay getting the actual numbers from most of the companies, but it did make negotiations easier.
-No recruiter in their right mind will rescind your offer only because you failed to make a decision until the end of the week, even if they say otherwise.
+No recruiter in their right mind will rescind your offer only because you failed to make a decision until the end of the week, even if they say otherwise--this piece of info was confirmed by several of my recruiters.
 The only exception here is when they give you a short deadline (typically 24 hours) after several rounds of back-and-forth--this is to make sure that you do not use the increased offer to improve your counters yet another time.
 
 Once you have numbers from all the companies, you can start negotiating.
-People often say that you should negotiate only with the companies that you might end up working for, hereafter referred to as *alpha* companies, but I disagree.
+People often say that you should negotiate only with the companies that you might end up working for, hereafter referred to as *alpha* companies.
+I think it is true in an ideal fully-observed system, when you know your worth a priori.
+In the real world, though, I see negotiating as a price-discovery process in a free-market economy.
+You never know which company wants you the most, and which can offer you the highest compensation (those two are correlated, but only weakly).
+
 To increase your compensation, you need good counteroffers, as no company will go much higher than your highest counteroffer.
-However, before you start, you do not really know how much any company wants you.
 Even if you do not want to work at a given company (*beta*), it might be worth it to see how much you can get from them, since it might be useful as a counteroffer.
 
-Negotiating with the beta companies also gives you practice before engaging with the alphas.
-In my process, I negotiated with betas and got them as high as they could go before talking to alphas.
-This allowed me to minimize the number of back-and-forths with the alphas.
-I think it was helpful since recruiters can get annoyed if you try to do too many roundtrips.
+Negotiating with the beta companies can be morally-questionable, so it is up to you.
+If you decide to do it, it can give you additional practice before engaging with the alphas--this is similar to scheduling your interviews in a particular order, see [Before You Begin](#before-you-begin).
+
+Some people suggest negotiating with betas and getting them as high as they can go before talking to alphas.
+This allows you to minimize the number of back-and-forths with the alphas, which can be helpful since recruiters can get annoyed if you try to do too many roundtrips.
 
 # Good Luck!
 I hope the above gives you a helpful overview of how a job hunt looks like and how much effort it takes.
 Planning and preparation are key, but the rest is up to you.
-If you do it right, you mind end up getting more than twice what your initial offers indicated. I do not care about money, but it does open up possibilities, so why not take it?
+If you do it right, you mind be able to significantly increase your compensation package.
+Even if money is not your priority, it does open up opportunities, so it might be a good idea to make some effort and invest in your future.
 
 A few books I can recommend on negotiation and communication, which are useful for the job hunt but more importantly also for everyday life:
   * [Getting to Yes](https://www.goodreads.com/book/show/313605.Getting_to_Yes)
   * [Getting Past No](https://www.goodreads.com/book/show/228331.Getting_Past_No)
   * [Crucial Conversations](https://www.goodreads.com/book/show/15014.Crucial_Conversations)
+
+
+#### Acknowledgements
+I would like to thank everyone who provided me with insights into their interview processes, though I will not list names for obvious reasons. I also thank [Adam Goliński](http://adamgol.me/) and [Sandy Huang](https://shhuang.github.io/) for providing feedback on the initial version of this post.
