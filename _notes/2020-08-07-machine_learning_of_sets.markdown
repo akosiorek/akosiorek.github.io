@@ -54,7 +54,7 @@ We can create permutation-invariant functions by following a similar logic.
 Examples in a minibatch are processed independently (which reflects their i.i.d. nature), but if each entry in the minibatch contains more than just a single data point (many pixels in an image, points in a point cloud, tokens in a language sentence), then flattening these points into a vector and feeding it into an MLP or a CNN results in different parameters being used for processing different data points, and hence order is used implicitly; feeding the points into an RNN reuses parameters, but introduces an explicit dependence on the order.
 
 A straightforward solution to this issue is to treat points in a single example in the same way we treat examples in the minibatch: treat them independently.
-This approach, followed by a permutation-invariant pooling operation such as max or mean pooling, is explored in [Zaheer et al., "Deep Sets", NeurIPS 2017](http://papers.nips.cc/paper/is6931-deep-sets) and is proven to be a universal set-function approximator[^deepsetdim].
+This approach, followed by a permutation-invariant pooling operation such as max or mean pooling, is explored in [Zaheer et al., "Deep Sets", NeurIPS 2017](https://arxiv.org/abs/1703.06114) and is proven to be a universal set-function approximator[^deepsetdim].
     
     class DeepSet(hk.Module):
     
@@ -103,7 +103,7 @@ Learning permutation-equivariance can be induced by data augmentation. It is eas
           z, state = rnn(conditioning, state)
           zs.append(z[:, None])  # add an axis
 
-        return torch.cat(zs, 1)
+        return jnp.concatenate(zs, 1)
 
 #### Permutation-Invariant Loss Functions
 Learning to generate sets based on some conditioning typically requires scoring that set against the conditioning.
@@ -112,15 +112,15 @@ This can take the form of supervised learning (think of detecting objects in an 
 Since we generally have no guarantee that the generated sets will obey any ordering (why should they?), we have to apply losses invariant to that ordering.
 We have two options here:
 
-* We can find an optimal matching between two sets[^bipartite_matching], which comes down to finding a permutation $$\pi$$ of one of the sets that minimizes the computed loss, that is: $$\pi^\star = \arg \min_\pi \mathcal{L}( \pi X, Y)$$, with $$\mathcal{L}( \pi X, Y) = \sum_i l(\mathbf{x}_{\pi(i)}, \mathbf{y}_i)$$. This can be done exactly using the cubic [Hungarian matching]() algorithm, or approximately using e.g. [optimal-transport]()- or [message-passing]()-based algorithms. 
-* Instead of finding a matching, we can find a lower bound on what the matched loss would be. A popular choice here is the [Chamfer loss]()[^chamfer], which computes $$\sum_{x \in X} \min_{y \in Y} l(x, y) + \sum_{y \in Y} \min_{x \in X} l(x, y)$$. For every element in one set, it finds the element in the other set that results in the lowest pairwise loss. This loss does not work for multisets as elements can be repeated.
+* We can find an optimal matching between two sets[^bipartite_matching], which comes down to finding a permutation $$\pi$$ of one of the sets that minimizes the computed loss, that is: $$\pi^\star = \arg \min_\pi \mathcal{L}( \pi X, Y)$$, with $$\mathcal{L}( \pi X, Y) = \sum_i l(\mathbf{x}_{\pi(i)}, \mathbf{y}_i)$$. This can be done exactly using the cubic [Hungarian matching](https://en.wikipedia.org/wiki/Hungarian_algorithm) algorithm, or approximately using e.g. [optimal-transport](https://arxiv.org/abs/1106.1925)- or [message-passing](https://web.stanford.edu/~bayati/papers/bpmwmIT.pdf)-based algorithms. 
+* Instead of finding a matching, we can find a lower bound on what the matched loss would be. A popular choice here is the Chamfer loss[^chamfer], which computes $$\sum_{x \in X} \min_{y \in Y} l(x, y) + \sum_{y \in Y} \min_{x \in X} l(x, y)$$. For every element in one set, it finds the element in the other set that results in the lowest pairwise loss. This loss does not work for multisets as elements can be repeated.
 
 If we do not have ground-truth for each conditioning (we have just sets), or if we have many possible sets for each conditioning (e.g., a group of possible sets for one of a few labels), we can instead learn by matching distributions e.g., in the GAN setting.
 If we take this approach, we have two problems, really: that of vector-to-set for the generator and set-to-vector for the discriminator. 
 Fortunately, we know how to solve the set-to-vector problem with a permutation-invariant neural net, and shortly I am going to describe some permutation-equivariant methods for generation.
 This is precisely what we recently explored in [Stelzner et al., "Generative Adversarial Set Transformers", ICML 2020 Object-Oriented Learning Workshop](https://oolworkshop.github.io/program/ool_32.html).
 
-Coincidentally, sometimes we have to deal with a set of latent variables inside a model. For example in Attend-Infer-Repeat (AIR, [paper](), [blog]()), a set of object-centered latent variables was used to render an image.
+Coincidentally, sometimes we have to deal with a set of latent variables inside a model. For example in Attend-Infer-Repeat (AIR, [paper](https://papers.nips.cc/paper/6230-attend-infer-repeat-fast-scene-understanding-with-generative-models), [blog](http://akosiorek.github.io/ml/2017/09/03/implementing-air.html)), a set of object-centered latent variables was used to render an image.
 We did not need to worry about permutations of these variables, though, since the rendering process was permutation-invariant, and any loss applied to the final image carried over to the latent variables in a permutation-invariant way, too!
 
 #### Gradient Descent to the Rescue!
@@ -131,8 +131,65 @@ Their introduced model, DSPN, uses a fixed initial set adapted via a nested loop
 This loss function compares the currently-generated set and the conditioning, telling us how well the current set and the conditioning match.
 DSPN achieved quite good results on point-cloud generation (but only MNIST) and showed proof-of-concept results to object detection in images.
     
-    def dspn():
-      pass  
+    class DeepSetPredictionNetwork(hk.Module):
+
+      def __init__(self, set_encoder, max_n_points, n_dim,
+                  n_updates=5, step_size=1., repr_loss_func):
+        """Builds the module.
+
+        Args:
+          set_encoder: An encoder for sets, e.g. a DeepSet.
+          max_n_points: an integer.
+          n_dim: dimensionality of the set elements.
+          n_updates: The number of gradient updates applied to the initial set.
+          step_size: Learning rate for the inner gradient descent loop.
+          repr_loss_func: A loss function used to compare the embedding of a
+            generated set and an embedding of the conditioning, e.g. squared-error.
+        """
+        
+        super().__init__()
+        self._set_encoder = set_encoder
+        self._max_n_points = max_n_points
+        self._n_dim = n_dim
+        self._n_updates = n_updates
+        self._step_size = step_size
+
+        self._clip_pres = lambda x: jnp.clip(x, 0., 1.)
+
+        def repr_loss(inputs, target):
+          h = self._set_encoder(*inputs)
+          # We take a mean over the number of points.
+          return repr_loss_func(h, target).mean(1).sum()
+
+        self._repr_loss_grad = hk.grad(repr_loss)
+
+      def __call__(self, z):     
+        # create the initial set and presence variables
+        current_set = hk.get_parameter('init_set',
+                                shape=(self._max_n_points, self._n_dim),
+                                init=hk.initializers.RandomUniform(0., 1.)
+        )
+        
+        current_pres = self._clip_pres(hk.get_parameter('init_pres',
+                                        shape=(self._max_n_points, 1),
+                                        init=hk.initializers.Constant(.5),
+        ))
+
+        # DSPN returns the starting set/pres and apparently puts loss on it.
+        all_sets, all_pres = [current_set], [current_pres]
+        for _ in range(self._n_updates):
+          set_grad, pres_grad = self._repr_loss_grad((current_set, current_pres), z)
+
+          current_set = current_set - self._step_size * set_grad
+          current_pres = current_pres - self._step_size * pres_grad
+          # We need to make sure that the presence is valid after each update.
+          current_pres = self._clip_pres(current_pres)
+
+          all_sets.append(current_set)
+          all_pres.append(current_pres)
+
+        return all_sets, all_pres
+ 
 
 <figure id="DSPN_flow">
   <div align='center' style="max-width: 800px; display: box; float: margin: auto;">
@@ -140,12 +197,13 @@ DSPN achieved quite good results on point-cloud generation (but only MNIST) and 
   </div>
 
   <figcaption align='center'>
-    <b>Fig. 1:</b> DSPN iteratively transforms an initial set (left) into the final prediction (2nd from the right) by gradient descent.
+    <b>Fig. 1:</b> <a href="https://arxiv.org/abs/1906.06565">DSPN</a> iteratively transforms an initial set (left) into the final prediction (2nd from the right) by gradient descent.
   </figcaption>
 </figure>
 
 While a cool idea, the gradient iteration learned by DSPN is a flow field (see [Fig. 1](#DSPN_flow)), and it necessarily requires many iterations to reach the final prediction.
 Instead, we can learn a permutation-equivariant operator that directly outputs the required set.
+
 #### Attention is All You Need, Really
 Not too long ago, [Vaswani et al. showed that we could replace RNNs with attention, causal masking, and position embeddings](https://arxiv.org/abs/1706.03762).
 It turns out that discarding causal masking and position embeddings leads to self-attention that is permutation-equivariant, as explored in [Lee et al., "Set Transformer", ICML 2019](https://arxiv.org/abs/1810.00825).
@@ -156,10 +214,20 @@ There are several advantages:
 * Transformer layers can operate on the set of different dimensionality, and they do not have to project it to the output dimensionality between layers. This might seem trivial, but it relaxes the flow-field constraint, and in practice, creates transformations that can hold on to some additional state, akin to RNNs.
 * DSPN captures dependencies between individual points only via a pooling operation in its DeepSet encoder. Transformers are all about relational reasoning, and can directly use interdependencies between points to generate the final set.
 
+<figure id="tspn">
+  <div align='center' style="max-width: 800px; display: box; float: margin: auto;">
+    <img style="width: 500px; padding: 5px;" src="{{site.url}}/resources/tspn.svg"/>
+  </div>
+
+  <figcaption align='center'>
+    <b>Fig. 2:</b> <a href="https://arxiv.org/abs/2006.16841">TSPN</a> uses a Transformer to directly transform a random point cloud.
+  </figcaption>
+</figure>
+
 We explored this idea in two recent papers; both published at the [ICML 2020 Object-Oriented Learning workshop](https://oolworkshop.github.io/),
 
-* [Kosiorek, Kim, and Rezende, "Conditional Set Generation with Transformers"](https://arxiv.org/abs/2006.16841),
-* [Stelzner, Kersting, and Kosiorek, "Generative Adversarial Set Transformers"](https://oolworkshop.github.io/program/ool_32.html),
+* [Kosiorek, Kim, and Rezende, "Conditional Set Generation with Transformers"](https://arxiv.org/abs/2006.16841), where we introduce the Transformer Set Prediction Network (TSPN). TSPN uses an MLP to predict the required number of points from a conditioning, samples the required number of points from a base distribution, and transforms them using a Transformer, see [Fig. 2](#tspn) for an overview.
+* [Stelzner, Kersting, and Kosiorek, "Generative Adversarial Set Transformers"](https://oolworkshop.github.io/program/ool_32.html) introduces GAST: a similar idea, where a number of points from a base distribution are conditionally-transformed (based on a global noise vector) using a Transormer. We then use a Set Transformer to discriminate between the generated and real sets.
 
  but the same idea was concurrently explored by at least two other groups[^other_set_att_papers].
 While details differ, the main finding is that an initial set (randomly-sampled or deterministic and learned) passed through several layers of attention leads to state-of-the-art set generation.
@@ -176,12 +244,12 @@ The general architecture is as follows:
   </div>
 
   <figcaption align='center'>
-    <b>Fig. 2:</b> Slot Attention induces competition between queries, leading to SOTA unsupervised object segmentation.
+    <b>Fig. 3:</b> <a href="https://arxiv.org/abs/2006.15055">Slot Attention</a> induces competition between queries, leading to SOTA unsupervised object segmentation.
   </figcaption>
 </figure>
 
 The results of [Carion et al.'s DETR](https://github.com/facebookresearch/detr) model are particularly impressive. While it still required quite a bit of engineering, this pure set-prediction approach achieves state-of-the-art on large-scale object detection on COCO!
-[Locatello et al.](https://arxiv.org/abs/2006.15055) show that the particular form of attention required might depend on the task; in their experiments, they normalize attention across the query axis (instead of the key axis), which leads to competition between queries, and provides superior results for unsupervised object segmentation ([Fig. 2](#slot_attention)).
+[Locatello et al.](https://arxiv.org/abs/2006.15055) show that the particular form of attention required might depend on the task; in their experiments, they normalize attention across the query axis (instead of the key axis), which leads to competition between queries, and provides superior results for unsupervised object segmentation ([Fig. 3](#slot_attention)).
 
 
 #### What about those Point Processes??!!
@@ -189,7 +257,7 @@ While the above approaches definitely work for generating sets, they make no use
 Point processes treat the set size $$k \in \mathbb{N}_+$$ as a random variable and model it jointly with the set membership $$X \in \mathcal{X}^k$$;
 in other words, they model the joint density $$p(X, k)$$.
 This is in contrast to some of the previously-describe methods; e.g., DSPN uses heuristics to determine the set size, which does or does not work depending on which loss function it is used with ([see our TSPN paper for details](https://arxiv.org/abs/2006.16841)).
-Ours TSPN treats determining the set size as a classification problem--this works quite well in practice, but it **cannot** generalize to set sizes not seen in training.
+Our TSPN is not much better in that regard, and casts determining the set size as a classification problem--this works quite well in practice, but it **cannot** generalize to set sizes not seen in training.
 While a detailed description of point process would take too much space to fit in this blog, I would like to highlight one notion, which I learned about from an excellent paper by Vu et al. called ["Model-Based Multiple Instance Learning"](https://arxiv.org/abs/1703.02155).
 
 Let $$f_k(X) = f_k(x_1, ..., x_i, ..., x_k)$$ be a probability density function defined over sets of $$k$$ elements, and let this density be invariant to ordering of the elements of the set, that is $$\forall \pi$$: $$f(X) = f(\pi X)$$.
@@ -204,17 +272,28 @@ $$
 p(\{x_1, ..., x_k\}) = p(X, k) = p_c(k)k!U^k f_k(x_1, ..., x_k)\,,
 $$
 
-where $$p_c(k)$$ is the probability mass function of the set size, $$k!$$ accounts for all possible permutations, $$U$$ is the unit volume, and $$f_k$$ is the permutation-invariant density of a set of size k.
+where $$p_c(k)$$ is the probability mass function of the set size, $$k!$$ accounts for all possible permutations of set elements $$\mathbf{x}_i$$, $$U 
+\in \mathbb{R}_+$$ is the unit volume expressed as a scalar value, and $$f_k$$ is the permutation-invariant density of a set of size k.
 Interestingly, none of the above set-generation papers take the point-process theory into account when defining their likelihoods over sets.
-I would be curious to see if it improves results, as the Vu et al. paper suggests.
+I would be curious to see if it improves results, as Vu et al. suggest.
 
 # Set To Set
-Given the knowledge of how to solve set-to-vector and vector-to-set problem, it should be quite clear how to solve a set-to-set problem: we can encode a set into a vector, and then decode that vector into a set using one of the above vector-to-set methods.
+Given the knowledge of how to solve set-to-vector and vector-to-set problems, it should be quite clear how to solve a set-to-set problem: we can encode a set into a vector, and then decode that vector into a set using one of the above vector-to-set methods.
 While correct, this approach forces us to use a bottleneck in the shape of a single vector.
 Perhaps a better option is to encode a set to an intermediate set, perhaps of smaller cardinality, and use that smaller set as conditioning when generating the output set.
 There are many methods of how this can be done, and I will only mention that we explored some such problems in [Lee et al., "Set Transformer", ICML 2019](https://arxiv.org/abs/1810.00825), while leaving the details as an exercise for the reader.
 
-# Outlook
+# Outlook and Conclusion
+Thank you for reaching this far!
+We have covered some basics of set-oriented machine learning by taking a look at set-to-vector, vector-to-set, and set-to-set problems and some approaches to solving them.
+I find this area of ML incredibly interesting, for the variety of things that we consider in life as sets is endless.
+At the same time, the set-learning models tend to be both theoretically- and architecturally- interesting.
+Moving forward, I would like to see more models directly based on the point-process theory.
+Another area that I have not mentioned, and one that is extremely applicable, is that of normalizing flows.
+You can read about [the basics of normalizing flows in my previous blog post](http://akosiorek.github.io/ml/2018/04/03/norm_flows.html), but in short, they are used to transform a simple probability distribution into a more complicated one.
+As such, there is nothing preventing us from using flows to transform a distribution over independent variables into a joint distribution over sets.
+I will leave working out the details as an exercise to the reader, and I will be looking out for papers doing that :)
+
 # Further Reading
 
 #### Footnotes
@@ -223,6 +302,7 @@ There are many methods of how this can be done, and I will only mention that we 
 
 #### Acknowledgements
 I would like to give huge thanks to Fabian Fuchs, Thomas Kipf, Hyunjik Kim, Yan Zhang, George Papamakarios, and Danilo Rezende for insightful and inspiring discussions about the machine learning of sets. I would also like to thank Hyunjik Kim and Fabian Fuchs for their feedback on the initial version of this post.
+This post would not happen if not for Juho Lee, who got me interested in sets in the first place.
 
 [^acn]: See [Graves et al., "Associative Compression Networks for Representation Learning", arXiv 2018](https://arxiv.org/abs/1804.02476) for an example where dataset (or minibatch) items are modeled jointly, and the loss depends on the whole minibatch/dataset.
 
