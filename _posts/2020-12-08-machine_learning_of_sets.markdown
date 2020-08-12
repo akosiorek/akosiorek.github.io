@@ -1,18 +1,15 @@
 ---
-layout: draft
+layout: post
 title:  "Machine Learning of Sets"
-date:   2020-07-08 15:15:0 +0000
+date:   2020-08-12 10:15:0 +0000
+comments: True
+share: True
 categories: ML
 ---
-<!-- ToDos:
-- mention flows
-- finish code snippets
-- write outlook
-- give some point process lit in further reading
- -->
+
 In machine learning, we typically work with input pairs (x, y), and we try to figure out how x and y depend on each other.
 To do so, we gather many such pairs and hope that the dependence will reveal itself if a) we have enough data, b) our model is expressive enough to approximate this dependency, and c) we get the hyperparameters right.
-In the simplest case, both x and y are just scalar values (or vectors $$\mathbf{x}, \mathbf{y}$$); for example, given some measurements of a plant's shape, we might want to predict its species. The measurements here are real vectors $$\mathbf{x} \in \mathcal{X}$$, where the input space $$\mathcal{X} = \mathbb{R}^d$$ is usually euclidean, and the species is a label $$\mathbf{y} \in \mathcal{Y}$$ (usually an integer or a one-hot vector), but it is common for $$\mathbf{x}$$ and $$\mathbf{y}$$ to have more structure.
+In the simplest case, both x and y are just scalar values (or vectors $$\mathbf{x}, \mathbf{y}$$); for example, given some measurements of a plant's shape, we might want to predict its species. The measurements here are real vectors $$\mathbf{x} \in \mathcal{X}$$, where the input space $$\mathcal{X} = \mathbb{R}^d$$ is usually Euclidean, and the species is a label $$\mathbf{y} \in \mathcal{Y}$$ (usually an integer or a one-hot vector), but it is common for $$\mathbf{x}$$ and $$\mathbf{y}$$ to have more structure.
 
 One of the main assumptions we rely on is that the pairs of (x, y) points are [independent and identically distributed (i.i.d.) random variables](https://en.wikipedia.org/wiki/Independent_and_identically_distributed_random_variables).
 Let us unpack this a bit, starting from the end,
@@ -41,6 +38,8 @@ First some imports:
 # Notation
 Before we start, it is useful to introduce some notation.
 Let $$\mathbf{x} \in \mathbb{R}^d$$ be an input vector, $$\mathbf{y} \in \mathbb{R}^k$$ the output vector, and let $$X = \{\mathbf{x}_i\}_{i=1}^M$$ and $$Y = \{\mathbf{y}_j\}_{j=1}^N$$ be sets of $$M$$ and $$N$$ elements, respectively.
+Note that, until now, $$y$$ or $$\mathbf{y}$$ were simply labels.
+From now on, however, $$\mathbf{x}$$ and $$\mathbf{y}$$ can live in the same space, and simply be elements of different sets.
 I will also use $$\mathcal{L}(X, Y)$$ as a loss function operating on two sets, and $$l(\mathbf{x}, \mathbf{y})$$ will be a loss function for pairs of elements.
 
 # Set To Vector
@@ -64,12 +63,12 @@ This approach, followed by a permutation-invariant pooling operation such as max
         self._decoder = decoder
         
       def __call__(self, x):
-      """Compute the DeepSet embedding.
+        """Compute the DeepSet embedding.
 
-      Args:
-        x: Tensor of shape [batch_size, n_elems, n_dim].
-      """
-      return self._decoder(self._encoder(x).mean(1))
+        Args:
+          x: Tensor of shape [batch_size, n_elems, n_dim].
+        """
+        return self._decoder(self._encoder(x).mean(1))
 
 While newer approaches with better empirical performance exist, they all draw from the Deep Sets framework[^setembeddings].
 Another factor contributing to the fact that the set-to-vector problem is quite easy is that pooling operations naturally work with variable-sized sets--there is nothing extra we have to do to handle sets of variable cardinality.
@@ -78,7 +77,7 @@ This is not the case in the following two problems, where we have to take the se
 # Vector To Set
 In vector-to-set, the task is to generate a set of real vectors from some (usually vector-valued) conditioning.
 
-The majority of approaches out there focuses on generating ordered sequences instead of unordered sets, and usually of fixed or at least known size.
+The majority of approaches out there focus on generating ordered sequences instead of unordered sets, and usually of fixed or at least known size.
 This allows using MLPs[^setae] and RNNs[^order_matters] to predict fixed- and variable-length sets, respectively, but at the price of having to learn permutation-equivariance from data.
 Learning permutation-equivariance can be induced by data augmentation. It is easy to generate different permutations, but usually comes at a decreased performance and/or longer training times compared to truly permutation-equivariant methods[^data_augmentation].
    
@@ -96,7 +95,13 @@ Learning permutation-equivariance can be induced by data augmentation. It is eas
         return z.reshape(batch_size, n_elements, -1)
 
       def set_rnn(conditioning, state, rnn, n_elements):
-        """
+        """Predicts a set.
+
+        Args:
+          conditioning: tensor of shape [batch_size, n_dim].
+          state: initial state for the rnn.
+          rnn: rnn core.
+          n_elements: int.
         """
         zs = []
         for _ in range(n_elements):
@@ -229,7 +234,7 @@ We explored this idea in two recent papers; both published at the [ICML 2020 Obj
 * [Kosiorek, Kim, and Rezende, "Conditional Set Generation with Transformers"](https://arxiv.org/abs/2006.16841), where we introduce the Transformer Set Prediction Network (TSPN). TSPN uses an MLP to predict the required number of points from a conditioning, samples the required number of points from a base distribution, and transforms them using a Transformer, see [Fig. 2](#tspn) for an overview.
 * [Stelzner, Kersting, and Kosiorek, "Generative Adversarial Set Transformers"](https://oolworkshop.github.io/program/ool_32.html) introduces GAST: a similar idea, where a number of points from a base distribution are conditionally-transformed (based on a global noise vector) using a Transormer. We then use a Set Transformer to discriminate between the generated and real sets.
 
- but the same idea was concurrently explored by at least two other groups[^other_set_att_papers].
+The same idea was concurrently explored by at least two other groups[^other_set_att_papers].
 While details differ, the main finding is that an initial set (randomly-sampled or deterministic and learned) passed through several layers of attention leads to state-of-the-art set generation.
 The general architecture is as follows:
 * Some (big) neural net encoder for processing the conditioning, e.g., a ResNet for images.
@@ -254,14 +259,13 @@ The results of [Carion et al.'s DETR](https://github.com/facebookresearch/detr) 
 
 #### What about those Point Processes??!!
 While the above approaches definitely work for generating sets, they make no use of the well-known area of statistics concerned with modeling sets: point processes!
-Point processes treat the set size $$k \in \mathbb{N}_+$$ as a random variable and model it jointly with the set membership $$X \in \mathcal{X}^k$$;
-in other words, they model the joint density $$p(X, k)$$.
-This is in contrast to some of the previously-describe methods; e.g., DSPN uses heuristics to determine the set size, which does or does not work depending on which loss function it is used with ([see our TSPN paper for details](https://arxiv.org/abs/2006.16841)).
-Our TSPN is not much better in that regard, and casts determining the set size as a classification problem--this works quite well in practice, but it **cannot** generalize to set sizes not seen in training.
+Point processes treat the set size $$k \in \mathbb{N}_+$$ as a random variable and model it jointly with the set membership $$X \in \mathcal{X}^k$$, thus modeling the joint density $$p(X, k)$$.
+This is in contrast to some of the previously-described methods; e.g., DSPN uses heuristics to determine the set size, which does or does not work depending on which loss function it is used with ([see our TSPN paper for details](https://arxiv.org/abs/2006.16841)).
+Our TSPN is not much better in that regard, and casts determining the set size as a classification problem--this works quite well in practice, but it **cannot generalize** to set sizes not seen in training.
 While a detailed description of point process would take too much space to fit in this blog, I would like to highlight one notion, which I learned about from an excellent paper by Vu et al. called ["Model-Based Multiple Instance Learning"](https://arxiv.org/abs/1703.02155).
 
 Let $$f_k(X) = f_k(x_1, ..., x_i, ..., x_k)$$ be a probability density function defined over sets of $$k$$ elements, and let this density be invariant to ordering of the elements of the set, that is $$\forall \pi$$: $$f(X) = f(\pi X)$$.
-It turns out that we can use this density to compare sets of the same cardinality with each other in terms of how probable they are (i.e., how high their likelihood is), but, even if we have two such functions for sets of cardinality $$k$$ and $$m$$, we simply **cannot** use them to compare sets of those different cardinalities.
+It turns out that we can use this density to compare sets of the same cardinality with each other in terms of how probable they are (i.e., how high their likelihood is), but, even if we have two such functions for sets of cardinality $$k$$ and $$m$$, we simply **cannot use them to compare sets of those different cardinalities**.
 Why is that?
 Well, comparing sets of two and sets of three elements is a bit like comparing square meters m$$^2$$ and cubic meters m$$^3$$, or like comparing apples and oranges.
 It is not that we cannot compare sets of different cardinality, but we have to first bring them into the same space, which in this case is dimension-less.
@@ -280,8 +284,8 @@ I would be curious to see if it improves results, as Vu et al. suggest.
 # Set To Set
 Given the knowledge of how to solve set-to-vector and vector-to-set problems, it should be quite clear how to solve a set-to-set problem: we can encode a set into a vector, and then decode that vector into a set using one of the above vector-to-set methods.
 While correct, this approach forces us to use a bottleneck in the shape of a single vector.
-Perhaps a better option is to encode a set to an intermediate set, perhaps of smaller cardinality, and use that smaller set as conditioning when generating the output set.
-There are many methods of how this can be done, and I will only mention that we explored some such problems in [Lee et al., "Set Transformer", ICML 2019](https://arxiv.org/abs/1810.00825), while leaving the details as an exercise for the reader.
+Perhaps a better option is to encode a set to an intermediate set, possibly of smaller cardinality, and use that smaller set as conditioning when generating the output set.
+There are many methods of how this can be done, and I will only mention that we explored some such problems in [Lee et al., "Set Transformer", ICML 2019](https://arxiv.org/abs/1810.00825) and encourage curious readers to look at the paper.
 
 # Outlook and Conclusion
 Thank you for reaching this far!
@@ -292,9 +296,13 @@ Moving forward, I would like to see more models directly based on the point-proc
 Another area that I have not mentioned, and one that is extremely applicable, is that of normalizing flows.
 You can read about [the basics of normalizing flows in my previous blog post](http://akosiorek.github.io/ml/2018/04/03/norm_flows.html), but in short, they are used to transform a simple probability distribution into a more complicated one.
 As such, there is nothing preventing us from using flows to transform a distribution over independent variables into a joint distribution over sets.
-I will leave working out the details as an exercise to the reader, and I will be looking out for papers doing that :)
+While there are some papers that use this idea[^set_flow_models] to define permutation-invariant likelihoods, none of them uses point-process theory.
+I will leave working out how to combine flows and point processes as an exercise to the reader, and I will be looking out for papers doing that :)
 
 # Further Reading
+If you want to learn about point processes, I would recommend:
+* The excellent and yet a very short book ["Poisson Process" by J. F. C. Kingman](https://global.oup.com/academic/product/poisson-processes-9780198536932?cc=us&lang=en&).
+* [The open MIT course on Discrete Stochastic Processes by Robert Gallager](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-262-discrete-stochastic-processes-spring-2011/), which provides a very gentle introduction to point processes without any measure theory.
 
 #### Footnotes
 * footnotes will be placed here. This line is necessary
@@ -326,3 +334,5 @@ This post would not happen if not for Juho Lee, who got me interested in sets in
 [^order_matters]: [Vinyals et. al., "Order Matters: Sequence to sequence for sets", ICLR 2015](https://arxiv.org/abs/1511.06391).
 
 [^chamfer]: Strictly speaking, it would be a lower bound if divided by two. The most popular form of the Chamfer loss omits this division, however.
+
+[^set_flow_models]: [Wirnsberger et. al, "Targeted free energy estimation via learned mappings", arXiv 2020] uses a split-coupling flow with a permutation-invariant coupling layer, and [Li et. al., "Exchangeable Neural ODE for Set Modeling", arXiv 2020](https://arxiv.org/abs/2008.02676) use [Neural ODEs](https://arxiv.org/abs/1806.07366) with permutation-invariant drift functions, which gives them a permutation-equivariant continuous normalizing flow, how cool!
