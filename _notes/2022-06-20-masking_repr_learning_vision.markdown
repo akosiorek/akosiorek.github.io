@@ -25,6 +25,14 @@ But also based on where you are, based on what you're expecting to see, etc[^bli
 
 Blind spot image: adapted from [Scientific American](https://www.scientificamerican.com/article/find-your-blind-spot/),
 
+<figure id='blind_spot'>
+  <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/blind_spot.webp" alt="blind spot"/>
+  <figcaption align='center'>
+  <b>Fig 1:</b> Blind spot of the human eye. The illustration is thanks to <a href="http://george-retseck.squarespace.com/">George Retseck</a>.
+  </figcaption>
+</figure>
+
+
 
 The brain had to learn to do this.
 I don't know how, nor if learning to inpaint the blind spot is necessary for the brain to learn good visual representations[^brain_learn].
@@ -55,7 +63,12 @@ So masking single pixels, or random groups of pixels, is unlikely to bear simila
 The first attempt at doing BERT for vision I am aware of is the [Context Encoder (CE) by Pathak et. al.](https://arxiv.org/abs/1604.07379).
 A paper from 2016, it actually predates BERT by two years.
 
-[context encoder input output figure]
+<figure id='context_encoder_in_out'>
+  <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/context_encoder_input_output.png" alt="blind spot"/>
+  <figcaption align='center'>
+  <b>Fig 2:</b> From left: masked input, reconstruction, three examples of different masks used  by the Context Encoder.
+  </figcaption>
+</figure>
 
 CE used a small CNN (AlexNet-based) in an encoder-decoder setup.
 The images are either masked by a single large-ish rectangle, multiple smaller rectangles or the ground-truth segmentation mask from another image.
@@ -109,25 +122,32 @@ If we want object-like masks, we should probably take a look at what an object.
 As Klaus Greff tell us in his talk at the 2020 ICML workshop on Object-Centric Learning, it is difficult to define what an object is.
 But we may think of it in terms of pixels.
 
-[embedd Klaus' talk]
-{
-<div id="presentation-embed-38930701"></div>
-<script src="https://slideslive.com/embed_presentation.js"></script>
-<script>
-  embed = new SlidesLiveEmbed("presentation-embed-38930701", {
-    presentationId: "38930701",
-    autoPlay: false,
-    verticalEnabled: true,
-  });
-</script>
-}
+<figure id='klaus_talk'>
+  <div id="presentation-embed-38930701" style="width: 10%;"></div>
+  <script src="https://slideslive.com/embed_presentation.js"></script>
+  <script>
+    embed = new SlidesLiveEmbed("presentation-embed-38930701", {
+      presentationId: "38930701",
+      autoPlay: false,
+      verticalEnabled: false,
+    });
+  </script>
+  <figcaption align='center'>
+  "What is Object" by Klaus Greff, Object-Oriented Learning Workshop at ICML 2020.
+  </figcaption>
+</figure>
 
 If you hide a piece of the background, you can easily imagine the hidden part.
 If you hide a piece of an object, you can reason about the missing part.
 If you hide the whole object, you might have a hard time figuring out what it was, or if there was an object at all.
 The only way to do this is to check if it would make sense for any particular object to be there given the visible surroundings.
 
-[embedd the balloon slide from Klaus' talk]
+<figure id='masked_balloons'>
+  <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/masked_balloons.png" alt="masked balloons"/>
+  <figcaption align='center'>
+  <b>Fig 3:</b> Impainting a part of an object or background is easy. Impainting a while object is difficult. Adapted from Klaus' talk above.
+  </figcaption>
+</figure>
 
 This is because pixels belong to an object are strongly correlated with each other.
 Pixels belonging to different objects or an object and the background are not correlated or are correlated only very weakly[^bg_correlation].
