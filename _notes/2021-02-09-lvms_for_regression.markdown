@@ -1,9 +1,33 @@
 ---
 layout: draft
-title:  "Why you should use a latent variable model (LVM) for regression problems?"
+title:  "Why you should use a latent variable model (LVM) for regression problems"
 date:   2021-02-08 16:23:0 +0000
 categories: ml
 ---
+
+deterministic: a function y = f(x) which always gives the same result for a given x
+stochastic: a function y = f(x) which gives different result with every invocation of f even though x does not change
+generative (unconditional) model: a model that learns the distribution of data p(x)
+discriminative (conditional) model: a model that estimates the distribution of a property y of x when conditioned on a data point x
+
+- [Masegosa, "Learning under Model Misspecification: Applications to Variational and Ensemble methods", NeurIPS 2020.](https://arxiv.org/abs/1912.08335)
+- [Bellemere etl. al, "A Distributional Perspective on Reinforcement Learning", ICML 2017](https://arxiv.org/abs/1707.06887)
+
+these two use categorical output distributions
+- [van den Oord et. al., "WaveNet: A Generative Model for Raw Audio"](https://arxiv.org/abs/1609.03499)
+- [van den Oord et. al, "Pixel Recurrent Neural Networks"](https://arxiv.org/abs/1601.06759)
+
+in wavenet they write That
+"One approach [...]  would be to use a mixture model such as a mixture density network (Bishop, 1994)
+or mixture of conditional Gaussian scale mixtures (MCGSM) (Theis & Bethge, 2015). However,
+van den Oord et al. (2016a) showed that a softmax distribution tends to work better, even when the
+data is implicitly continuous (as is the case for image pixel intensities or audio sample values). One
+of the reasons is that a categorical distribution is more flexible and can more easily model arbitrary
+distributions because it makes no assumptions about their shape."
+
+
+
+
 - deep learning for classification works very well using deterministic discriminative Models
 - regression is usually handled by similar deterministic discriminative models, with the difference that the output distribution is gaussian instead of categorical
 - interestingly, many papers note that quantizing the problem and treating as classification usually works better. People offer various explanations: multimodal output distribution, not penalizing errors too much, making the problem simpler by choosing one of a finite number of answers. This holds both in regression and in continuous RL.
@@ -16,3 +40,4 @@ categories: ml
 
 
 #### Acknowledgements
+Sandy Huang for literature
