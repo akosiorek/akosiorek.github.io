@@ -29,9 +29,20 @@ In my free time I read lots of books, train calithenics, lift heavy weights, jog
 
 #### Publications
 ----------------
+[Y. Shi, N. Siddharth, P. H.S. Torr, **A. R. Kosiorek** "Adversarial Masking for Self-Supervised Learning", _ICML_, 2022.](https://arxiv.org/abs/2201.13100)
+
+
+[**A. R. Kosiorek**, H. Strathmann, D. Zoran, P. Moreno, R. Schneider, S. Mokra, D. J. Rezende "NeRF-VAE: A Geometry Aware 3D Scene Generative Model", _ICML_, 2021.](http://proceedings.mlr.press/v139/kosiorek21a.html)
+
+[K. Stelzner, K. Kersting, **A. R. Kosiorek** "Decomposing 3D Scenes into Objects via Unsupervised Volume Segmentation", _arXiv_, 2021.](https://arxiv.org/abs/2104.01148)
+
+[**A. R. Kosiorek**, H. Kim, D. J. Rezende "Conditional Set Generation with Transformers", Workshop on Object-Oriented Learning at _ICML_, 2020.](https://arxiv.org/abs/2006.16841)
+
+[K. Stelzner, K. Kersting, **A. R. Kosiorek** "Generative adversarial set transformers", Workshop on Object-Oriented Learning at _ICML_, 2020.](https://www.ml.informatik.tu-darmstadt.de/papers/stelzner2020ood_gast.pdf)
+
 [M. Engelcke, **A. R. Kosiorek**, O. Parker Jones, I. Posner "GENESIS: Generative Scene Inference and Sampling with Object-Centric Latent Representations", _ICLR_, 2020.](https://arxiv.org/abs/1907.13052) [`code`](https://github.com/applied-ai-lab/genesis)
 
-[J. Xu, J. F. Ton, H. Kim, **A. R. Kosiorek**, J. Schwarz, Y. W. Teh, “Meta Learning in Function Space”, _CoRR_, 2019.](https://arxiv.org/abs/1912.02738)
+[J. Xu, J. F. Ton, H. Kim, **A. R. Kosiorek**, J. Schwarz, Y. W. Teh, “Meta Learning in Function Space”, _arXiv_, 2019.](https://arxiv.org/abs/1912.02738)
 
 [**A. R. Kosiorek**, S. Sabour, Y. W. Teh, G. E. Hinton "Stacked Capsule Autoencoders", _NeurIPS_, 2019.](https://arxiv.org/abs/1906.06818) [`code`](https://github.com/google-research/google-research/tree/master/stacked_capsule_autoencoders)
 
@@ -42,9 +53,9 @@ F. B. Fuchs, O. Groth, **A. R. Kosiorek**, A. Bewley, M. Wulfmeier, A. Vedaldi, 
 
 [**A. R. Kosiorek**, H. Kim, I. Posner, Y. W. Teh "Sequential Attend, Infer, Repeat: Generative Modelling of Moving Objects", _NeurIPS_, 2018.](https://arxiv.org/abs/1806.01794) [`code`](https://github.com/akosiorek/sqair), [`NeurIPS spotlight talk`](https://www.facebook.com/nipsfoundation/videos/515859272265612/?t=2897), [`video`](https://youtu.be/-IUNQgSLE0c), [`poster`](https://drive.google.com/open?id=1HC0FflbWhYd2XtuJMD7qW3jbuOuNEy7T)
 
-[T. A. Le<sup style="color: #B0B0B0;">$$\circ$$</sup>, **A. R. Kosiorek**<sup style="color: #B0B0B0;">$$\circ$$</sup>, N. Siddharth, Y. W. Teh, F. Wood "Revisiting Reweighted Wake-Sleep", _CoRR_, 2018.](https://arxiv.org/abs/1805.10469)
+[T. A. Le<sup style="color: #B0B0B0;">$$\circ$$</sup>, **A. R. Kosiorek**<sup style="color: #B0B0B0;">$$\circ$$</sup>, N. Siddharth, Y. W. Teh, F. Wood "Revisiting Reweighted Wake-Sleep", _arXiv_, 2018.](https://arxiv.org/abs/1805.10469)
 
-[F. B. Fuchs, O. Groth, **A. R. Kosiorek**, A. Bewley, M. Wulfmeier, A. Vedaldi, I. Posner "Neural Stethoscopes: Unifying Analytic, Auxiliary and Adversarial Network Probing", _CoRR_, 2018.](https://arxiv.org/abs/1806.05502)
+[F. B. Fuchs, O. Groth, **A. R. Kosiorek**, A. Bewley, M. Wulfmeier, A. Vedaldi, I. Posner "Neural Stethoscopes: Unifying Analytic, Auxiliary and Adversarial Network Probing", _arXiv_, 2018.](https://arxiv.org/abs/1806.05502)
 
 [T. Rainforth, **A. R. Kosiorek**, T. A. Le, C. J. Maddison, M. Igl, F. Wood, Y. W. Teh, "Tighter Variational Bounds are Not Necessarily Better", _ICML_, 2018.](https://arxiv.org/abs/1802.04537)
 
