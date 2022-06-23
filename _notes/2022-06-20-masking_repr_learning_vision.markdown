@@ -192,7 +192,15 @@ Fortunately, we can combine the adversarial masking idea with siamese-style repr
 
 The result? Meet [ADIOS](https://arxiv.org/abs/2201.13100)!
 
-# [Adversarial Masking for Self-Supervised Learning (ADIOS)](https://arxiv.org/abs/2201.13100)
+# [**Ad**versarial **I**nference-**O**cclusion **S**elf-supervision (ADIOS)](https://arxiv.org/abs/2201.13100)
+
+The name might be cumbersome, but the acronym is cool.
+The setting is fairly simple.
+Imagine you have a siamese-style representation learning objective $$L(f(a), g(b))$$ with neural nets $$f$$ and $$g$$ and input images $$a$$ and $$b$$ such that the model is trained by minimising this objective.
+Usually, $$a$$ and $$b$$ are different *views* of the same image $$x$$ created by applying augmentations to $$x$$.
+Let $$m$$ be a masking model, such that $$b^m = m(b)$$ is a masked version of $$b$$.
+ADIOS works by minimising the loss $$L$$ with respect to $$f$$ and $$g$$, and maximising it with respect to $$m$$.
+
 
 
 #### Acknowledgements
