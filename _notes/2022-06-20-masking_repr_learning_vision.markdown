@@ -12,7 +12,7 @@ Recently, it led to state-of-the-art representation learning in images.
 In this blog, I will dive into why masked images deliver such a powerful learning signal, and think about what may constitute a good mask.
 But first, let's start with some motivation.
 
-# Masking and the Brian
+# Masking and the Brain
 
 Have you ever covered an object you see with your hand, and tried to imagine how the covered part looks like?
 If not, why won't you try?
@@ -49,7 +49,7 @@ I expect that the brain had to learn how to inpaint the blind spot.
 Wouldn't it be cool, if this actually helped the brain to form good visual representations?
 This is a conjecture, but given the SOTA representation learning results of MIM models, I wouldn't be surprised if it was true.
 
-# MIM: Early Days
+# BERT or Why Inpaint for Representation Learning?
 
 I got first interested in MIM in 2018, right after [BERT of Devlin et. al.](https://arxiv.org/abs/1810.04805) came out.
 BERT is a large transformer trained to fill-in missing words in natural language sentences based on the available words.
@@ -98,7 +98,7 @@ This is easy to do for an image-divided-into-patches and a transformer like in V
 <figure id='mae'>
   <img style="width: 75%; display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/mae.png" alt="MAE architecture"/>
   <figcaption align='center'>
-  <b>Fig 2:</b> MAE architecture; note that the masked patches are not fed into the encoder.
+  <b>Fig 3:</b> MAE architecture; note that the masked patches are not fed into the encoder.
   </figcaption>
 </figure>
 
@@ -146,7 +146,7 @@ Second, they usually cover objects, with no masks or boxes describing relations 
     });
   </script>
   <figcaption align='center'>
-  "What is Object" by Klaus Greff, Object-Oriented Learning Workshop at ICML 2020.
+  "What are Objects" by Klaus Greff, Object-Oriented Learning Workshop at ICML 2020.
   </figcaption>
 </figure>
 
@@ -156,7 +156,7 @@ If we want object-like masks, we should probably take a look at what an object i
 <figure id='masked_balloons'>
   <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/masked_balloons.png" alt="masked balloons"/>
   <figcaption align='center'>
-  <b>Fig 3:</b> Impainting a part of an object or background is easy. Impainting a while object is difficult. Adapted from Klaus' talk above.
+  <b>Fig 3:</b> Inpainting a part of an object or background is easy. Inpainting a whole object is difficult. Adapted from Klaus' talk above.
   </figcaption>
 </figure>
 
@@ -186,7 +186,13 @@ Later, the mask starts covering parts of background, but in such a way that is s
 This confuses the inpainter, and forces it to paint an object where there was none.
 This is perhaps ok: the goal is not to get semantic segmentation out of this, but rather semantically-meaningful masks that can force a representation-learning model to reason about objects, properties, or relations.
 
-Since inpainting
+The main disadvantage of MIM is that you need to reconstruct the image.
+Recall that when you cover an object, you might not be able to reconstruct in mentally, but you still know what it is.
+Fortunately, we can combine the adversarial masking idea with siamese-style representation learning, which is reconstruction-free.
+
+The result? Meet [ADIOS](https://arxiv.org/abs/2201.13100)!
+
+# [Adversarial Masking for Self-Supervised Learning (ADIOS)](https://arxiv.org/abs/2201.13100)
 
 
 #### Acknowledgements
