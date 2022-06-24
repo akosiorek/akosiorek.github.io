@@ -36,11 +36,18 @@ It turns out, though, that your brain is doing image inpainting all the time wit
   </figcaption>
 </figure>
 
-Each of your eyes has a visual blind spot see [Fig. 1](#blind_spot).
+Each of your eyes has a visual blind spot, see the figure above.
 It's roughly in the middle vertically, slightly off-centre to the outside for each eye.
 You don't see anything there, because it's the place where the visual nerve connects to the eye, leaving no place for photoreceptors.
-Check out the exercise on [Wikipedia](https://en.wikipedia.org/wiki/Blind_spot_(vision)) to see for yourself.
 And yet, you are not aware that any information is missing: you seem to see what is hidden.
+See for yourself!
+
+<figure id='blind_spot_test'>
+  <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/blind_spot_test.jpeg" alt="blind spot test"/>
+  <figcaption align='center'>
+  <b>Fig 2:</b> Test your blind spot: cover your left eye, and focus your right eye on the plus (or do the opposite for the left eye). Move closer to the screen, such that the distance to your face is roughly three times the distance between symbols. Move your head back and forth. At some point, the circle should disappear. That's your blind spot!
+  </figcaption>
+</figure>
 
 While I have no reference to prove it, it seems that the brain is inpainting the occluded area.
 This may be based on what is around that area, but also using the view from the other eye (novel view synthesis), and what the brain is expecting to see in a given context.
@@ -81,7 +88,7 @@ The first attempt at doing BERT for vision I am aware of is the [Context Encoder
 
 CE used a small CNN (AlexNet-based) in an encoder-decoder setup.
 The images are either masked by a single large-ish rectangle, multiple smaller rectangles or the ground-truth segmentation mask from another image.
-While the learned representations are ok, they are far behind supervised models of the time in performance, even when fine-tuned.
+While the learned representations are ok, their performance is far behind supervised models of the time, even when fine-tuned.
 
 
 It was the [Masked Autoencoder (MAE) by He et. al.](https://arxiv.org/abs/2111.06377) that finally proved that image inpainting can lead to state-of-the-art representations for images.
@@ -124,7 +131,7 @@ As the paper shows, such masks are also better for representation learning.
 Still, masking properties or relations remains difficult under that scheme.
 
 
-# How to get word-like masks for images?
+# How to Get Word-Like Masks for Images?
 
 Assuming that masking single words in natural language sentences is the best you can do for representation learning, the question now is: how do we get image masks with effects similar to masking single words in natural language sentences?
 
@@ -152,6 +159,10 @@ Second, they usually cover objects, with no masks or boxes describing relations 
 
 The alternative is to think about the properties of the desired masks.
 If we want object-like masks, we should probably take a look at what an object is---a good place to start is Klaus Greff's talk from the 2020 ICML workshop on Object-Centric Learning above.
+The perhaps surprising takeout is that objects are incredibly difficult to define.
+The good thing is that, when it comes to images, we can think about objects as groups of pixels.
+And we can learn which groups correspond to objects, or to other patterns that are useful to mask when it comes to representation learning.
+Let's have a look at some air balloons.
 
 <figure id='masked_balloons'>
   <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/masked_balloons.png" alt="masked balloons"/>
@@ -160,14 +171,24 @@ If we want object-like masks, we should probably take a look at what an object i
   </figcaption>
 </figure>
 
-Look at the air baloon figure above.
+Look at the air balloon figure above.
 If you hide a piece of the background, in this case an empty sky, you can easily imagine the hidden part.
-If you hide a piece of an object, you can reason about the missing part.
-If you hide the whole object, you might have a hard time figuring out what it was, or if there was an object at all.
+If you hide a random piece of an object, you can easily imagine the hidden part, since its contents will be largely-defined by the visible parts of the object.
+If you hide a semantically-meaningful piece of an object, e.g. the balloon part of an air balloon, you have a somewhat harder task.
+Now you know that there should be a balloon because you can see a basket.
+Based on the context, you know that it probably belongs under a balloon.
+But the balloon can have a range of sizes and can be painted many different ways.
+Finally, you can hide the whole object.
+This is virtually indistinguishable from hiding a piece of background.
+You will have a hard time figuring out what the object was, or if there was an object at all.
 The only way to do this is to check if it would make sense for any particular object to be there given the visible surroundings.
 
-This is because pixels belonging to an object are strongly correlated with each other.
-Pixels belonging to different objects or an object and the background are not correlated or are correlated only very weakly[^bg_correlation].
+This gradation of difficulty stems from the fact that some pixels are correlated with each other, while others are not.
+
+* Pixels belonging to an object are strongly correlated with each other.
+
+* Pixels belonging to different objects or an object and the background are not correlated or are correlated only very weakly[^bg_correlation].
+
 By now, this is a widely-accepted view.
 I would go a step further, and say that pixels representing a relation (e.g. two objects that often appear together), or a property, are also strongly correlated, therefore possible to infer from a partial observation.
 
@@ -187,7 +208,7 @@ This confuses the inpainter, and forces it to paint an object where there was no
 This is perhaps ok: the goal is not to get semantic segmentation out of this, but rather semantically-meaningful masks that can force a representation-learning model to reason about objects, properties, or relations.
 
 The main disadvantage of MIM is that you need to reconstruct the image.
-Recall that when you cover an object, you might not be able to reconstruct in mentally, but you still know what it is.
+Recall that when you cover an object, you might not be able to reconstruct it mentally, but you still know what it is.
 Fortunately, we can combine the adversarial masking idea with siamese-style representation learning, which is reconstruction-free.
 
 The result? Meet [ADIOS](https://arxiv.org/abs/2201.13100)!
