@@ -46,6 +46,7 @@ See for yourself!
   <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/blind_spot_test.jpeg" alt="blind spot test"/>
   <figcaption align='center'>
   <b>Fig 2:</b> Test your blind spot: cover your left eye, and focus your right eye on the plus (or do the opposite for the left eye). Move closer to the screen, such that the distance to your face is roughly three times the distance between symbols. Move your head back and forth. At some point, the circle should disappear. That's your blind spot!
+  Inspired by <a href="https://en.wikipedia.org/wiki/Blind_spot_(vision)">Wikipedia</a>.
   </figcaption>
 </figure>
 
@@ -194,10 +195,12 @@ I would go a step further, and say that pixels representing a relation (e.g. two
 
 The above intuition can be formalised as a training objective.
 Imagine a setup where you try to inpaint an image with some parts occluded.
-We can instantiate a masking model, whose job is to make inpainting as difficult as possible.
+To get the mask, we instantiate a masking model whose job is to make inpainting as difficult as possible, subject to some constraints[^mask constraints].
 The result?
 You get masks that seem to hide objects or their parts.
 You also get better representation learning results than with using MAE's masks[^learned_masks_for_mae].
+
+[^mask constraints]: The constraints are neccessary to prevent the masks from occluding the whole image, but only to make the masks more useful for representation learning. Following the balloon example above, we see that the most-difficult-to-inpaint are masks that cover whole objects. They aren't pixel-perfect segmentation masks, because the clear outline would be highly informative of the object. But blobby-looking masks covering whole objects wouldn't be very useful either, at least not at the beginning of training. This is because predicting a fully-occluded object is too difficult a task, that only a very strong model (well-trained, say) may be capable of.
 
 [^learned_masks_for_mae]: The caveat is that using such learned masks requires feeding the whole image into the encoder. This results in a significantly increased computation cost for MAE and might not be practical.
 
@@ -212,19 +215,65 @@ Recall that when you cover an object, you might not be able to reconstruct it me
 Fortunately, we can combine the adversarial masking idea with siamese-style representation learning, which is reconstruction-free.
 
 The result? Meet [ADIOS](https://arxiv.org/abs/2201.13100)!
+It's a cool acronym, right?
 
 # [**Ad**versarial **I**nference-**O**cclusion **S**elf-supervision (ADIOS)](https://arxiv.org/abs/2201.13100)
 
-The name might be cumbersome, but the acronym is cool.
-The setting is fairly simple.
-Imagine you have a siamese-style representation learning objective $$L(f(a), g(b))$$ with neural nets $$f$$ and $$g$$ and input images $$a$$ and $$b$$ such that the model is trained by minimising this objective.
-Usually, $$a$$ and $$b$$ are different *views* of the same image $$x$$ created by applying augmentations to $$x$$.
-Let $$m$$ be a masking model, such that $$b^m = m(b)$$ is a masked version of $$b$$.
-ADIOS works by minimising the loss $$L$$ with respect to $$f$$ and $$g$$, and maximising it with respect to $$m$$.
+ADIOS applies to any siamese-style representation learning algorithm (contrastive or otherwise) where the training is done by minimising some distance between representations.
+Siamese-style representation learning usually looks like this:
+
+1. Take an image $$x$$.
+2. Create two views of that image, $$a$$ and $$b$$.
+3. Encode the views with either the same or separate neural nets to get two representations $$z^a$$ and $$z^b$$.
+4. Compute a loss $$L(z^a, z^b)$$.
+5. Update the parameters of the neural net(s) by minimising that loss.
+
+In ADIOS, we want one of the image views, say $$b$$, to be masked.
+The mask $$m = mask(b)$$ is conditional on the image, and is predicted by another neural net.
+We get a masked image $$b^m = b \circ m$$ by applying the mask to the image (via element-wise multiplication $$\circ$$).
+The rest is as above; but when we are done, we also update the parameters of the masking neural net by maximising the loss $$L$$.
+
+
+That's it! It's simple, isn't it?  A really cool thing is that is works with many different SSL objectives (we tried BYOL, SimCLR, and SimSiam), and it improves representation learning performance on every dataset and task we tried.
+
+
+You've read about lots of intuition behind why this works in the previous sections.
+But how does this apply to Siamese representation learning?
+
+Minimizing the distance between representations extracted from two views of the same image means that we are trying to get a representation that is invariant to that transformation.
+A simple example is this: Let $$a$$ be the original image, and let $$b$$ be a grayscale version of that image.
+We want the resulting representation to encode the semantic contents, e.g. objects, irrespective of the colour.
+Hence, we say, the representation is invariant to colour variations.
+
+Using a masked image as one of the views means that we want a representation that is invariant to masking.
+There are two ways to do this:
+
+1. Ignore any region that can be masked.
+
+2. If a region is masked, try to predict what was there before masking.
+
+Option 1) means encoding no information (representation collapse), and is usually incompatibile with any good learning objective.
+That leaves option 2), and forces the model to reason about occluded parts.
+The masking model is trying to make 2) more difficult, hence it learns to mask semantically-meaningful regions of the image.
+These do not necessarily correspond to objects.
+This is probably good, because masking whole objects would be too difficult.
+What constrains masking whole objects, or the whole image for that matter?
+First, we predict several masks such that they sum to one for every pixel. This prevents masking the whole image.
+Second, we penalise the masks so that they cannot be all black or all white (and therefore unused).
+Third, there are built-in inductive biases in the form of the masking net architecture (Convolutional UNet and pays more attention to texture than semantics) and the encoder architecture (ViT seems to result in masks that look more semantically-meaningful than when a ResNet is used).
+
+That's pretty much it.
+Have a look at the [paper](https://arxiv.org/abs/2201.13100) for more details.
+
+Some interesting things to do:
+* Figure out how to learn masks for MAE w/o processing the whole image with the encoder, and perhaps with higher granularity than afforded by masking individual patches.
+* Run large-scale experiments with full ImageNet or even bigger datasets, large ResNets and large ViTs.
+* Experiment with stronger inductive biases for the masking model like [slot-attention](a) or [GENESIS](a).
 
 
 
 #### Acknowledgements
+I would like to thank Yuge (Jimmy) Shi for carrying out the majority of work behind the ADIOS paper, as well as for helpful suggestions for early versions of this blog.
 
 
 #### Footnotes
