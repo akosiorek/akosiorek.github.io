@@ -163,7 +163,7 @@ Inspired by [bag-of-words](https://en.wikipedia.org/wiki/Bag-of-words_model) cla
 </figure>
 
 
-Dictionaries of visual words were built by running a [SIFT](http://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf) or SURF keypoint detector on a dataset of images, describing these keypoints with relevant descriptors ([SIFT]()http://www.cs.ubc.ca/~lowe/papers/iccv99.pdf, SURF, [HOG](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients)), and then clustering them.
+Dictionaries of visual words were built by running a [SIFT](http://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf) or SURF keypoint detector on a dataset of images, describing these keypoints with relevant descriptors ([SIFT](http://www.cs.ubc.ca/~lowe/papers/iccv99.pdf), SURF, [HOG](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients)), and then clustering them.
 The cluster centroids represented a new visual grammar.
 A new image could be classified by creating a histogram of such visual words and feeding it into an SVM, say.
 A visual word like that could correspond to an eye or a car wheel.
