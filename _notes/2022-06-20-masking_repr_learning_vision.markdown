@@ -8,23 +8,22 @@ categories: ml
 <!-- # On Masking for Representation Learning in Vision -->
 
 Masked-image modeling (MIM) is about covering parts of an image and then trying to recover what was hidden from what is left.
-Recently, it led to state-of-the-art representation learning in images.
+Recently, it has led to state-of-the-art representation learning in images.
 In this blog, I will dive into why masked images deliver such a powerful learning signal and think about what may constitute a good mask.
 But let's start with some motivation.
 
 # Masking and the Brain
 
 Have you ever covered an object you saw with your hand and tried to imagine what the covered part looks like?
-If not, why won't you try?
+If not, why not give it a try?
 You may be unable to draw or paint it since that requires considerable skill.
 But you may not even be able to see it clearly in your mind's eye.
-Yet, you know what it is or what it can be used for---you have a good representation of it.
+Yet, you know what it is or what it can be used for---in other words, you have a good representation of it.
 Getting such representations is, roughly, the goal behind masked-image modeling (MIM).
 
-Reconstructing the hidden part from the visible parts is called image inpainting, or more generally, missing-data imputation[^VAE-AC].
-MIM models are usually trained via image inpainting: they are trained to reconstruct occluded parts in an image.
-As we will see later on, reconstruction is not always necessary.
-But this is what your brain is doing all the time!
+Reconstructing the hidden part from the visible parts is called image inpainting, or more generally, missing-data imputation.[^VAE-AC]
+While MIM models are usually trained via image inpainting, we will see later on that reconstruction is not always necessary.
+But actually, this is what your brain is doing all the time!
 
 [^VAE-AC]: ["Variational Autoencoder with Arbitrary Conditioning" by Ivanov et al.](https://arxiv.org/abs/1806.02382) was the first paper that got me thinking about image inpainting.
 
@@ -35,8 +34,8 @@ But this is what your brain is doing all the time!
   </figcaption>
 </figure>
 
-Each of your eyes has a visual blind spot; see the figure above.
-It's roughly in the middle vertically, slightly off-center to the outside for each eye.
+Each of your eyes has a visual blind spot; as shown in the figure above.
+It's roughly in the middle vertically, and slightly off-center to the outside for each eye.
 You don't see anything there because it's the place where the optic nerve connects to the eye, leaving no place for photoreceptors.
 And yet, you are unaware that any information is missing: you seem to see what is hidden.
 See for yourself!
@@ -98,7 +97,7 @@ Words in natural language are fundamentally different from pixels in images.
 So masking just a few random rectangles is unlikely to bear similar results to masking words.
 
 It was the [Masked Autoencoder (MAE) by He et al.](https://arxiv.org/abs/2111.06377) that finally proved that image inpainting can lead to state-of-the-art representations for images.
-Coming five years after CE, it did bring in recent advances.
+Coming five years after CE, it brought in recent advances.
 The encoder is a large vision transformer ([ViT, Dosovitskiy et al.](https://arxiv.org/abs/2010.11929)).
 The image is split into a rectangular grid, as in ViT, and a number of grid elements are masked.
 This paper provides two insights:
@@ -141,10 +140,10 @@ Still, masking properties or relations remains difficult under that scheme.
 
 # Finding Visual Words
 
-Let's assume that, for representation learning, masking single words in natural language sentences is the best you can do.
+Let's assume that, for representation learning, masking single words in natural language sentences is the best thing to do.
 How do we get such visual-word masks for images?
 
-We need to identify image regions that are similar in meaning to words.
+We would need to identify image regions that are similar in meaning to words.
 Object bounding boxes or segmentation masks would be a good choice if not for two issues.
 First, they usually cover objects, with no masks or boxes describing relations between objects or parts thereof[^mask_editing].
 Second, they are human-generated, which defeats the purpose of unsupervised learning.
@@ -153,8 +152,8 @@ Let's explore alternatives.
 [^mask_editing]: The latter could be perhaps circumvented by editing ground-truth masks, e.g., taking a union of two object masks, diluting or eroding masks, etc.
 
 #### Visual Words from Before Deep-Learning
-The concept of a visual word has been studied in the pre-deep-learning era.
-Inspired by [bag-of-words](https://en.wikipedia.org/wiki/Bag-of-words_model) classifiers for natural language (e.g., an SVM operating on word histograms, the so-called bag of words), people constructed [visual bag-of-words](https://medium.com/analytics-vidhya/bag-of-visual-words-bag-of-features-9a2f7aec7866) classifiers.
+The concept of a visual word has been studied before in the pre-deep-learning era.
+Inspired by [bag-of-words](https://en.wikipedia.org/wiki/Bag-of-words_model) classifiers for natural language (e.g., an SVM operating on word histograms, the so-called bags of words), people constructed [visual bag-of-words](https://medium.com/analytics-vidhya/bag-of-visual-words-bag-of-features-9a2f7aec7866) classifiers.
 
 <figure id='visual_bag_of_wrds'>
   <img style="display: box; margin: auto; width: 65%;" src="{{site.url}}/resources/masked_image_modelling/bag_of_visual_words.png" alt="visual bag of words"/>
@@ -205,7 +204,7 @@ Let's have a look at some air balloons. -->
 <figure id='masked_balloons'>
   <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/masked_balloons.png" alt="masked balloons"/>
   <figcaption align='center'>
-  <b>Fig 5:</b> Inpainting a part of an object or background is easy. Inpainting a whole object is difficult. Adapted from Klaus' talk above.
+  <b>Fig 5:</b> Inpainting a part of an object or background is easy. Inpainting a whole object is difficult. Adapted from <a href="https://slideslive.com/38930701/what-are-objects">Klaus Greff's talk "What are Objects?"</a>.
   </figcaption>
 </figure>
 
@@ -301,7 +300,7 @@ The mask m = mask(b) is conditioned on the image and is predicted by another neu
 We get a masked image $$b^m = b \circ m$$ by applying the mask to the image (via element-wise multiplication $$\circ$$), and extract representation $$z_b^m$$.
 At the end, in addition to updating the encoder's parameters, we also update the parameters of the masking neural net by maximizing the loss L with respect to $$\phi$$.
 
-That's it! It's simple, isn't it? A really cool thing is that is works with many different RFL objectives (we tried BYOL, SimCLR, and SimSiam), and it improves representation learning performance on every dataset and task we tried.
+That's it! It's simple, isn't it? A cool thing is that is works with many different RFL objectives (we tried BYOL, SimCLR, and SimSiam), and it improves representation learning performance on every dataset and task we tried.
 Additionally, ADIOS improves robustness to non-adversarial attacks (e.g., changing the background behind an object), presumably due to decreasing sensitivity to spurious correlations (these are often masked separately from the object due to the correlation structure discussed above).
 
 # How Does Masking Apply to Reconstruction-Free Learning (RFL)?
@@ -334,7 +333,8 @@ If you're interested, have a look at the [ADIOS paper](https://arxiv.org/abs/220
 
 
 #### Acknowledgements
-<!-- I would like to thank [Yuge (Jimmy) Shi](https://yugeten.github.io/) for carrying out the majority of the work behind the ADIOS paper, as well as for helpful suggestions for early versions of this blog. -->
+I would like to thank [Yuge Shi](https://yugeten.github.io/) for doing most of the work behind the ADIOS paper.
+Huge thanks to Yuge Shi and [Sandy Huang](https://shhuang.github.io/) for proofreading and providing helpful suggestions for this blog.
 
 
 #### Footnotes
