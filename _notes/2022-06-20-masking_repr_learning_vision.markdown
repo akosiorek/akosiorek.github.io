@@ -53,12 +53,12 @@ This may be based on what is around that area, but also using the view from the 
 [^nvs_brain]: [Sajjadi et. al.](https://arxiv.org/abs/2206.06922) show that novel-view synthesis helps to learn object segmentation in an unsupervised setting. A long shot and a topic for another blog, but I wonder if the blind-spot inpainting in the brain could help with object perception.
 
 I expect that the ability to inpaint in the brain is not innate, and that the brain had to _learn_ how to do it.
-If this is the case, is this something that guides the brain in learning good visual representation?
+If this is the case, is this something that guides the brain in learning good visual representations?
 Given the SOTA representation learning results of MIM models, I wouldn't be surprised if it was true.
 
 It is also interesting that even though the brain is really good at inpainting (people don't usually know about their blind spots) or imagining (e.g. vivid dreams), this is not a capability we control consciously.
 Think about that object you covered: you know what it is, but you probably cannot project a pixel-perfect rendering in your mind.
-This is ok, because conscious reasoning relies on high-level descriptions, not pixel-level detail.
+This is ok, because conscious reasoning relies on high-level abstractions, not pixel-level detail.
 Since the representations we try to learn are usually used in such higher-level reasoning tasks, perhaps reconstruction is not the right way to go?
 
 
@@ -74,7 +74,7 @@ A model that learns to do that, learns many truths about the world.
 
 So why not do this for vision?
 You can, but it is not as straightforward as pushing a masked image through a CNN.
-If that's what you do, you get the [Context Encoder (CE) by Pathak et. al](https://arxiv.org/abs/1604.07379), which came out two years before BERT (2016).
+If that's what you do, you get the [Context Encoder (CE) by Pathak et. al](https://arxiv.org/abs/1604.07379), which came out in 2016, two years before BERT.
 CE used a small CNN (AlexNet-based) in an encoder-decoder setup.
 The images are either masked by a single large-ish rectangle, multiple smaller rectangles or the ground-truth segmentation mask from another image.
 While the learned representations are ok, their performance is far behind supervised models of the time, even when fine-tuned.
@@ -102,7 +102,6 @@ The image is split into a rectangular grid, as in ViT, and a number of grid elem
 This paper provides two insights:
 
 * The representation quality improves with the fraction of the image masked (up to a point).
-
 * Instead of feeding an image with masked parts to the encoder, it is better to just not use the masked parts as an input.
 This is easy to do for an image-divided-into-patches and a transformer like in ViT, but next to impossible for a CNN.
 
@@ -128,9 +127,7 @@ Rather, it's a group of pixels that represents something meaningful like an obje
 Imagine a man wearing a red jacket.
 
 * To mask "red", we need to occlude the majority of a jacket, perhaps leaving its outline.
-
 * To mask "jacket" without masking its colour, we can mask its outline but leave a pixel here or there.
-
 * To mask the fact that someone is wearing the jacket, we need to mask out a person while leaving fragments of the jacket.
 
 Such groupings are far from random, and are extremely unlikely to occur with random masks.
@@ -140,7 +137,7 @@ Still, masking properties or relations remains difficult under that scheme.
 
 # Finding Visual Words
 
-Let's assume that, for representation learning, masking single words in natural language sentences is the best you can.
+Let's assume that, for representation learning, masking single words in natural language sentences is the best you can do.
 How do we get such visual-word masks for images?
 
 We need to identify image regions that are similar in meaning to words.
@@ -156,7 +153,7 @@ The concept of a visual word has been studied in the pre-deep-learning era.
 Inspired by bag-of-words classifiers for natural language (e.g. an SVM operating on word histograms, the so-called bag of words), people constructed visual bag-of-words classifiers.
 Dictionaries of visual words were built by running a SIFT or SURF keypoint detector on a dataset of images, describing these keypoints with relevant descriptors (SIFT, SURF, HOG), and then clustering them.
 The cluster centroids represented a new visual grammar.
-A new image could be classified by creating a histogram of such visual words and feeding into an SVM, say.
+A new image could be classified by creating a histogram of such visual words and feeding it into an SVM, say.
 A visual word like that could correspond to an eye or a car wheel.
 While I haven't tried, it would be interesting to adapt this paradigm for MIM.
 
@@ -178,7 +175,7 @@ While I haven't tried, it would be interesting to adapt this paradigm for MIM.
 
 -->
 The modern alternative is to learn what a visual word is.
-This is exactly what we do in [Shi et. al., "Adversarial Masking for Self-Supervised Learning", ICML 2022](https://arxiv.org/abs/2201.13100), which introduces a reconstruction-free MIM model called ADIOS.
+This is exactly what we do in [Shi et. al., "Adversarial Masking for Self-Supervised Learning", ICML 2022](https://arxiv.org/abs/2201.13100) ([`code`](https://github.com/YugeTen/adios)), which introduces a reconstruction-free MIM model called ADIOS.
 If you're hungry for details, look at the paper.
 Here, I'll provide some intuitions.
 
@@ -214,7 +211,6 @@ The only way to do this is to check if it would make sense for any particular ob
 This gradation of difficulty in different masking scenarios stems from the fact that some pixels are correlated with each other, while others are not.
 
 * Pixels belonging to an object are strongly correlated with each other.
-
 * Pixels belonging to different objects or an object and the background are not correlated or are correlated only very weakly[^bg_correlation].
 
 By now, this is a widely-accepted view.
@@ -237,9 +233,17 @@ Later, the mask starts covering parts of the background, but in such a way that 
 This confuses the inpainter, and forces it to paint an object where there was none.
 This is perhaps ok: the goal is not to get semantic segmentation out of this, but rather semantically-meaningful masks that can force a representation-learning model to reason about objects, properties, or relations. -->
 
+What constrains masking whole objects, or the whole image for that matter?
+First, we predict several masks such that they sum to one for every pixel.
+Second, we penalise the masks so that they cannot be all black or all white.
+These two constraints mean that none of the predicted masks can cover the whole image, and that the image must be partitioned between all masks.
+Third, there are built-in inductive biases in the form of the masking net architecture (Convolutional UNet pays more attention to texture than semantics) and the encoder architecture (ViT seems to result in masks that look more semantically-meaningful than when a ResNet is used).
+
 Recall that MIM models are trained by reconstructing occluded images, similarly to how the brain inpaints the visual blind spot.
 But since we are not interested in pixel-perfect detail, but rather high-level, concious-like reasoning abilities, we may be able to get away without reconstruction.
-That's why we resort to Siamese-style representation learning, which is reconstruction-free.
+That's why we resort to reconstruction-free representation learning (RFL)[^RFL], which is reconstruction-free.
+
+[^RFL]: While I don't like creating acronyms, I find that the currently available options are somewhat lacking. All representation learning algorithms we care about are unsupervised (self-supervised **is** unsupervised). The ones that require image reconstruction (inpainting, e.g. MAE) use one encoder and one decoder. The ones that do not require reconstruction (e.g. SimCLR) use two encoders and no decoder. The latter were called contrastive (but some methods do not use negative examples) and later self-supervised learning (SSL; but this is too broad, since MAE is also SSL). Hence, I adopt the name "reconstruction-free learning (RFL)" to distinguish these two paradigms. An alternative that focuses on architectures would be "Siamese-Style Learning"---maybe this is better because it uses the same acronym?
 
 # [**Ad**versarial **I**nference-**O**cclusion **S**elf-supervision (ADIOS)](https://arxiv.org/abs/2201.13100)
 
@@ -249,24 +253,24 @@ The ADIOS-specific parts are highlighted in green.
 
 <div>
   <div style="float: left; width: 50%;">
-    <center>Generic Siamese-style representation learning</center>
+    <center><b>Generic reconstruction-free learning</b></center>
     <ol>
       <li>Take an image x.</li>
       <li>Create two views of that image, a and b.</li>
-      <li> </li>
-      <li>Encode the views a neural net with parameters 	&theta; to get two representations z_a and z_b.</li>
+      <li><span style="color:green">skip</span></li>
+      <li>Encode the views with a neural net with parameters 	&theta; to get two representations z_a and z_b.</li>
       <li>Compute a loss L(z_a, z_b).</li>
       <li>Update the parameters of the neural net(s) by minimising that loss with respect to &theta;.</li>
     </ol>
   </div>
   <!-- <div style="float: left; width: 10%;"> </div> -->
   <div style="float: right; width: 50%;">
-  <center>ADIOS</center>
+  <center><b>ADIOS</b></center>
   <ol>
     <li>Take an image x.</li>
     <li>Create two views of that image, a and b.</li>
     <li><span style="color:green">Predict a mask m = mask(b) with a neural net with parameters &phi;. Apply that mask to b.</span></li>
-    <li>Encode the views a neural net with parameters 	&theta; to get two representations z_a and z_b.</li>
+    <li>Encode the views with a neural net with parameters 	&theta; to get two representations z_a and z_b.</li>
     <li>Compute a loss L(z_a, z_b).</li>
     <li>Update the parameters of the neural net(s) by minimising that loss with respect to &theta;<span style="color:green"> and maximising with respect to &phi;</span>.</li>
   </ol>
@@ -281,41 +285,31 @@ The ADIOS-specific parts are highlighted in green.
 
 In ADIOS, we want one of the image views, say b, to be masked.
 The mask m = mask(b) is conditioned on the image, and is predicted by another neural net with parameters $$\phi$$.
-We get a masked image b^m = b \circ m by applying the mask to the image (via element-wise multiplication \circ), and extract representation z_b^m.
-The rest is as above; but when we are done, we also update the parameters of the masking neural net by maximising the loss L with respect to $$\phi$$.
-
+We get a masked image $$b^m = b \circ m$$ by applying the mask to the image (via element-wise multiplication $$\circ$$), and extract representation $$z_b^m$$.
+At the end, in addition to updating the encoder's parameters, we also update the parameters of the masking neural net by maximising the loss L with respect to $$\phi$$.
 
 That's it! It's simple, isn't it?  A really cool thing is that is works with many different SSL objectives (we tried BYOL, SimCLR, and SimSiam), and it improves representation learning performance on every dataset and task we tried.
-ADIOS also improves robustness to non-adversarial attacks (e.g. changing the background behind an object), presumably due to decreasing sensitivity to spurious correlations (these are often masked).
+Additionally, ADIOS improves robustness to non-adversarial attacks (e.g. changing the background behind an object), presumably due to decreasing sensitivity to spurious correlations (these are often masked separately from the object due to the correlation structure discussed above).
 
-
-You've read about lots of intuition behind why this works in the previous sections.
-But how does this apply to Siamese representation learning?
-
-Minimising the distance between representations extracted from two views of the same image means that we are trying to get a representation that is invariant to that transformation.
-A simple example is this: Let a be the original image, and let b be a grayscale version of that image.
-We want the resulting representation to encode the semantic contents, e.g. objects, irrespective of the colour.
-Hence, we say, the representation is invariant to colour variations.
-See [Fabian Fuch's blog](https://fabianfuchsml.github.io/equivariance1of2/) for a longer discussion of equivariant and invariance.
+# How Does Masking Apply to Reconstruction-Free Learning (RFL)?
+RFL minimises the distance between representations extracted from two views of the same image.
+That distance is minimised when the encoders are invariant to the transformations applied to the source image.
+Here is a simple example: if we use a colour image and a grayscale version of that same image, we will get a representation that encodes the content (e.g. objects), and even brightness, but not the hue.
+Hence, we say, the representation is invariant to hue variations.
+See [Fabian Fuch's blog](https://fabianfuchsml.github.io/equivariance1of2/) for a longer discussion of equivariance and invariance.
 
 Using a masked image as one of the views means that we want a representation that is invariant to masking.
 There are two ways to do this:
 
 1. Ignore any region that can be masked.
-
 2. If a region is masked, try to predict what was there before masking.
 
 Option 1) means encoding no information (representation collapse), and is usually incompatible with any good learning objective.
 That leaves option 2), and forces the model to reason about occluded parts.
-The masking model is trying to make 2) more difficult, hence it learns to mask strongly-correlated groups of pixels, which often correspond to semantically-meaningful object parts, but not necessarily correspond to objects.
-This is probably good, because masking whole objects would be too difficult.
-What constrains masking whole objects, or the whole image for that matter?
-First, we predict several masks such that they sum to one for every pixel. This prevents masking the whole image.
-Second, we penalise the masks so that they cannot be all black or all white (and therefore unused).
-Third, there are built-in inductive biases in the form of the masking net architecture (Convolutional UNet pays more attention to texture than semantics) and the encoder architecture (ViT seems to result in masks that look more semantically-meaningful than when a ResNet is used).
+The masking model is trying to make 2) more difficult, hence it learns to mask strongly-correlated groups of pixels, which often correspond to semantically-meaningful object parts, but not necessarily correspond to objects---as discussed.
 
 That's it! Hope you enjoyed the blog and have a better understanding of why inpainting leads to good representations in vision, and what makes a good mask.
-If you're interested, have a look at the [ADIOS paper](https://arxiv.org/abs/2201.13100) for more details.
+If you're interested, have a look at the [ADIOS paper](https://arxiv.org/abs/2201.13100) for more details, and play with the [`code`](https://github.com/YugeTen/adios)!
 
 <!-- Some interesting things to do:
 * Figure out how to learn masks for MAE w/o processing the whole image with the encoder, and perhaps with higher granularity than afforded by masking individual patches.
@@ -327,7 +321,7 @@ If you're interested, have a look at the [ADIOS paper](https://arxiv.org/abs/220
 
 
 #### Acknowledgements
-I would like to thank [Yuge (Jimmy) Shi](https://yugeten.github.io/) for carrying out the majority of work behind the ADIOS paper, as well as for helpful suggestions for early versions of this blog.
+<!-- I would like to thank [Yuge (Jimmy) Shi](https://yugeten.github.io/) for carrying out the majority of work behind the ADIOS paper, as well as for helpful suggestions for early versions of this blog. -->
 
 
 #### Footnotes

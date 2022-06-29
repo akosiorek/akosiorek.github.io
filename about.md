@@ -29,7 +29,7 @@ In my free time I read lots of books, train calithenics, lift heavy weights, jog
 
 #### Publications
 ----------------
-[Y. Shi, N. Siddharth, P. H.S. Torr, **A. R. Kosiorek** "Adversarial Masking for Self-Supervised Learning", _ICML_, 2022.](https://arxiv.org/abs/2201.13100)
+[Y. Shi, N. Siddharth, P. H.S. Torr, **A. R. Kosiorek** "Adversarial Masking for Self-Supervised Learning", _ICML_, 2022.](https://arxiv.org/abs/2201.13100) [`code`](https://github.com/YugeTen/adios)
 
 
 [**A. R. Kosiorek**, H. Strathmann, D. Zoran, P. Moreno, R. Schneider, S. Mokra, D. J. Rezende "NeRF-VAE: A Geometry Aware 3D Scene Generative Model", _ICML_, 2021.](http://proceedings.mlr.press/v139/kosiorek21a.html)
