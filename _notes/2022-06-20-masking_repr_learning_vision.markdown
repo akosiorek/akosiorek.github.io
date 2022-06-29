@@ -154,8 +154,17 @@ Let's explore alternatives.
 
 #### Visual Words from Before Deep-Learning
 The concept of a visual word has been studied in the pre-deep-learning era.
-Inspired by bag-of-words classifiers for natural language (e.g., an SVM operating on word histograms, the so-called bag of words), people constructed visual bag-of-words classifiers.
-Dictionaries of visual words were built by running a SIFT or SURF keypoint detector on a dataset of images, describing these keypoints with relevant descriptors (SIFT, SURF, HOG), and then clustering them.
+Inspired by [bag-of-words](https://en.wikipedia.org/wiki/Bag-of-words_model) classifiers for natural language (e.g., an SVM operating on word histograms, the so-called bag of words), people constructed [visual bag-of-words](https://medium.com/analytics-vidhya/bag-of-visual-words-bag-of-features-9a2f7aec7866) classifiers.
+
+<figure id='visual_bag_of_wrds'>
+  <img style="display: box; margin: auto; width: 65%;" src="{{site.url}}/resources/masked_image_modelling/bag_of_visual_words.png" alt="visual bag of words"/>
+  <figcaption align='center'>
+  <b>Fig 4:</b> The visual bag-of-words framework.
+  </figcaption>
+</figure>
+
+
+Dictionaries of visual words were built by running a [SIFT](http://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf) or SURF keypoint detector on a dataset of images, describing these keypoints with relevant descriptors ([SIFT]()http://www.cs.ubc.ca/~lowe/papers/iccv99.pdf, SURF, [HOG](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients)), and then clustering them.
 The cluster centroids represented a new visual grammar.
 A new image could be classified by creating a histogram of such visual words and feeding it into an SVM, say.
 A visual word like that could correspond to an eye or a car wheel.
@@ -196,7 +205,7 @@ Let's have a look at some air balloons. -->
 <figure id='masked_balloons'>
   <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/masked_balloons.png" alt="masked balloons"/>
   <figcaption align='center'>
-  <b>Fig 4:</b> Inpainting a part of an object or background is easy. Inpainting a whole object is difficult. Adapted from Klaus' talk above.
+  <b>Fig 5:</b> Inpainting a part of an object or background is easy. Inpainting a whole object is difficult. Adapted from Klaus' talk above.
   </figcaption>
 </figure>
 
