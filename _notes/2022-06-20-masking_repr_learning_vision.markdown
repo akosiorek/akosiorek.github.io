@@ -26,6 +26,8 @@ MIM models are usually trained via image inpainting: they are trained to reconst
 As we will see later on, reconstruction is not always necessary.
 But this is what your brain is doing all the time!
 
+[^VAE-AC]: ["Variational Autoencoder with Arbitrary Conditioning" by Ivanov et al.](https://arxiv.org/abs/1806.02382) was the first paper that got me thinking about image inpainting.
+
 <figure id='blind_spot'>
   <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/blind_spot.webp" alt="blind spot"/>
   <figcaption align='center'>
@@ -114,6 +116,8 @@ This is easy to do for an image-divided-into-patches and a transformer like in V
 
 MAE masks consist of small, randomly-scattered rectangles corresponding to the ViT image patches.
 They cover 75% of the image, which is significantly more than in CE[^scattered_mask].
+
+[^scattered_mask]: It is unclear what the impact of such scattered masks is. It might force the model to reason about multiple things in every image. It may also reduce the variance of the gradients because total occlusion of a certain object is less likely with such scattered masks.
 
 Why is this important?
 Because masking a large proportion of the image makes it more likely to mask visual words.
@@ -213,17 +217,17 @@ This gradation of difficulty in different masking scenarios stems from the fact 
 * Pixels belonging to an object are strongly correlated with each other.
 * Pixels belonging to different objects or an object and the background are not correlated or are correlated only very weakly[^bg_correlation].
 
+[^bg_correlation]: See that, according to above, the background behaves just like a big object behind the objects in the foreground.
+
 By now, this is a widely-accepted view.
 I would go a step further and say that pixels representing a relation (e.g., two objects that often appear together), or a property, are also strongly correlated; therefore, they are possible to infer from a partial observation.
 
 The above intuition can be formalized as a training objective.
 Imagine a setup where you try to inpaint an image with some parts occluded.
-To get the mask, we instantiate a masking model whose job is to make inpainting as difficult as possible, subject to some constraints[^mask_constraints].
+To get the mask, we instantiate a masking model whose job is to make inpainting as difficult as possible, subject to some constraints (see below).
 The result?
 You get masks that seem to hide objects or their parts.
 You also get better representation learning results than with using MAE's masks[^learned_masks_for_mae].
-
-[^mask_constraints]: The constraints are necessary to prevent the masks from becoming too difficult, e.g., occluding the whole image.
 
 [^learned_masks_for_mae]: The caveat is that using such learned masks requires feeding the whole image into the encoder. This results in a significantly increased computation cost for MAE and might not be practical.
 
@@ -234,14 +238,14 @@ This confuses the inpainter, and forces it to paint an object where there was no
 This is perhaps ok: the goal is not to get semantic segmentation out of this but rather semantically-meaningful masks that can force a representation-learning model to reason about objects, properties, or relations. -->
 
 What constrains masking whole objects, or the entire image for that matter?
-First, we predict several masks that sum to one for every pixel.
+First, we predict several masks while making sure that each pixel is masked only once.
 Second, we penalize the masks so that they cannot be all black or all white.
 These two constraints mean that none of the predicted masks can cover the whole image and that the image must be partitioned between all masks.
 Third, there are built-in inductive biases in the form of the masking net architecture (Convolutional UNet pays more attention to texture than semantics) and the encoder architecture (ViT seems to result in masks that look more semantically-meaningful than when a ResNet is used).
 
 Recall that MIM models are trained by reconstructing occluded images, similar to how the brain inpaints the visual blind spot.
 But since we are not interested in pixel-perfect detail but rather high-level, conscious-like reasoning abilities, we may be able to get away without reconstruction.
-That's why we resort to reconstruction-free representation learning (RFL)[^RFL], which is reconstruction-free.
+That's why we resort to reconstruction-free representation learning (RFL)[^RFL].
 
 [^RFL]: While I don't like creating acronyms, I find that the currently available options are somewhat lacking. All representation learning algorithms we care about are unsupervised (self-supervised **is** unsupervised). The ones that require image reconstruction (inpainting, e.g., MAE) use one encoder and one decoder. The ones that do not require reconstruction (e.g., SimCLR) use two encoders and no decoder. The latter were called contrastive (but some methods do not use negative examples) and later self-supervised learning (SSL; but this is too broad since MAE is also SSL). Hence, I adopt "reconstruction-free learning (RFL)" to distinguish these two paradigms. An alternative that focuses on architecture would be "Siamese-Style Learning"---maybe this is better because it uses the same acronym?
 
@@ -288,7 +292,7 @@ The mask m = mask(b) is conditioned on the image and is predicted by another neu
 We get a masked image $$b^m = b \circ m$$ by applying the mask to the image (via element-wise multiplication $$\circ$$), and extract representation $$z_b^m$$.
 At the end, in addition to updating the encoder's parameters, we also update the parameters of the masking neural net by maximizing the loss L with respect to $$\phi$$.
 
-That's it! It's simple, isn't it? A really cool thing is that is works with many different SSL objectives (we tried BYOL, SimCLR, and SimSiam), and it improves representation learning performance on every dataset and task we tried.
+That's it! It's simple, isn't it? A really cool thing is that is works with many different RFL objectives (we tried BYOL, SimCLR, and SimSiam), and it improves representation learning performance on every dataset and task we tried.
 Additionally, ADIOS improves robustness to non-adversarial attacks (e.g., changing the background behind an object), presumably due to decreasing sensitivity to spurious correlations (these are often masked separately from the object due to the correlation structure discussed above).
 
 # How Does Masking Apply to Reconstruction-Free Learning (RFL)?
@@ -304,9 +308,9 @@ There are two ways to do this:
 1. Ignore any region that can be masked.
 2. If a region is masked, try to predict what was there before masking.
 
-Option 1) means encoding no information (representation collapse) and is usually incompatible with any good learning objective.
-That leaves option 2) and forces the model to reason about occluded parts.
-The masking model is trying to make 2) more difficult. Hence it learns to mask strongly-correlated groups of pixels, which often correspond to semantically-meaningful object parts, but do not necessarily correspond to objects---as discussed.
+Option 1. means encoding no information (representation collapse) and is usually incompatible with any good learning objective.
+That leaves option 2. and forces the model to reason about occluded parts.
+The masking model is trying to make 2. more difficult. Hence it learns to mask strongly-correlated groups of pixels, which often correspond to semantically-meaningful object parts, but do not necessarily correspond to objects---as discussed.
 
 That's it! Hope you enjoyed the blog and have a better understanding of why inpainting leads to good representations in vision and what makes a good mask.
 If you're interested, have a look at the [ADIOS paper](https://arxiv.org/abs/2201.13100) for more details, and play with the [`code`](https://github.com/YugeTen/adios)!
@@ -325,13 +329,3 @@ If you're interested, have a look at the [ADIOS paper](https://arxiv.org/abs/220
 
 
 #### Footnotes
-
-[^VAE-AC]: ["Variational Autoencoder with Arbitrary Conditioning" by Ivanov et al.](https://arxiv.org/abs/1806.02382) was the first paper that got me thinking about image inpainting.
-
-[^brain_learn]: If you know any references to the contrary, please let me know in the comments or by email. Thanks!
-
-[^scattered_mask]: It is unclear what the impact of such scattered masks is.
-It might force the model to reason about multiple things in every image.
-It may also reduce the variance of the gradients because total occlusion of a certain object is less likely with such scattered masks.
-
-[^bg_correlation]: See that, according to above, the background behaves just like a big object behind the objects in the foreground.
