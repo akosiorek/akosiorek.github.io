@@ -8,21 +8,23 @@ categories: ml
 <!-- # On Masking for Representation Learning in Vision -->
 
 Masked-image modeling (MIM) is about covering parts of an image and then trying to recover what was hidden from what is left.
-Recently, it has led to state-of-the-art representation learning in images.
+Recently, it has led to state-of-the-art representation learning in images[^sota_repr_learn].
 In this blog, I will dive into why masked images deliver such a powerful learning signal and think about what may constitute a good mask.
 But let's start with some motivation.
+
+[^sota_repr_learn]: [MAE](https://arxiv.org/abs/2111.06377), [BEiT](https://arxiv.org/abs/2106.08254), [SemMAE](https://arxiv.org/abs/2206.10207).
 
 # Masking and the Brain
 
 Have you ever covered an object you saw with your hand and tried to imagine what the covered part looks like?
 If not, why not give it a try?
 You may be unable to draw or paint it since that requires considerable skill.
-But you may not even be able to see it clearly in your mind's eye.
+You may not even be able to see it clearly in your mind's eye.
 Yet, you know what it is or what it can be used for---in other words, you have a good representation of it.
 Getting such representations is, roughly, the goal behind masked-image modeling (MIM).
 
 Reconstructing the hidden part from the visible parts is called image inpainting, or more generally, missing-data imputation.[^VAE-AC]
-While MIM models are usually trained via image inpainting, we will see later on that reconstruction is not always necessary.
+While MIM models are usually trained via image inpainting, we will see later on that reconstruction is not always necessary for learning good represetations.
 But actually, this is what your brain is doing all the time!
 
 [^VAE-AC]: ["Variational Autoencoder with Arbitrary Conditioning" by Ivanov et al.](https://arxiv.org/abs/1806.02382) was the first paper that got me thinking about image inpainting.
@@ -55,7 +57,7 @@ This may be based on what is around that area but also using the view from the o
 
 I expect that the ability to inpaint in the brain is not innate and that the brain has to _learn_ how to do it.
 If this is the case, is this something that guides the brain in learning good visual representations?
-Given the SOTA representation learning results of MIM models, I wouldn't be surprised if it was true.
+Given the SOTA representation learning results of MIM models, I wouldn't be surprised if it was the case.
 
 It is also interesting that even though the brain is really good at inpainting (people don't usually know about their blind spots) or imagining (e.g., vivid dreams), this is not a capability we control consciously.
 Think about that object you covered: you know what it is, but you probably cannot project a pixel-perfect rendering in your mind.
@@ -69,7 +71,7 @@ Because it works---as shown by [BERT of Devlin et al.](https://arxiv.org/abs/181
 BERT is a large transformer trained to fill in missing words in natural language sentences based on the available words.
 Why is this useful?
 Because words represent concrete objects or abstract entities, their properties, and relations between them.
-To predict which word makes sense in the presence of other words, is to analyze what objects and with what properties are represented in that sentence, and what are the relations between them.
+To predict which word makes sense in the presence of other words, is to analyze what objects and with what properties are represented in that sentence, and what the relations between them are.
 A model that learns to do that learns many truths about the world.
 
 
@@ -103,8 +105,11 @@ The image is split into a rectangular grid, as in ViT, and a number of grid elem
 This paper provides two insights:
 
 * The representation quality improves with the fraction of the image masked (up to a point).
-* Instead of feeding an image with masked parts to the encoder, it is better to just not use the masked parts as an input.
+* Instead of feeding an image with masked parts to the encoder, it is better to just not use the masked parts as an input[^not_feeding_masked_patches].
 This is easy to do for an image-divided-into-patches and a transformer like in ViT, but next to impossible for a CNN.
+
+[^not_feeding_masked_patches]: If the masked patches are used as input, the model has to learn to ignore them. Since MAE masks 75% of the image, there is probably no benefit to representing which areas of the image are masked (they are represented implicitly, since there is no contribution from the masked patches). By asking the model to learn-to-ignore, we are wasting model capacity while also risking falling into a local minimum where the masked patches are not totally ignored. Note that in transformers we can hardcode to ignore masked patches while feeding them as input, but this is more computationally-expensive and requires changing the implementation; for a convnet this may be impossible.
+
 
 <figure id='mae'>
   <img style="width: 75%; display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/mae.png" alt="MAE architecture"/>
@@ -123,7 +128,7 @@ Because masking a large proportion of the image makes it more likely to mask vis
 
 # What is a Visual Word?
 
-A word represents an entity, its property, or a relation between entities.
+A word typically represents an entity, its property, or a relation between entities.
 A pixel represents a color.
 A visual word is a group of pixels, but it is not a random group.
 Rather, it's a group of pixels that represents something meaningful like an object, but also a property or a relation.
@@ -190,6 +195,7 @@ The modern alternative is to learn what a visual word is.
 This is exactly what we do in [Shi et al., "Adversarial Masking for Self-Supervised Learning", ICML 2022](https://arxiv.org/abs/2201.13100) ([`code`](https://github.com/YugeTen/adios)), which introduces a reconstruction-free MIM model called ADIOS.
 If you're hungry for details, look at the paper.
 Here, I'll provide some intuitions.
+[SemMAE](https://arxiv.org/abs/2206.10207), which just came out, provides an alternative way of learning visual-word-like masks.
 
 To understand how visual words can be learned, let's think about what categories of masks we can expect.
 We can do it by looking at some air balloons.
@@ -210,7 +216,7 @@ Let's have a look at some air balloons. -->
 
 <!-- Look at the air balloon figure above. -->
 If you occlude a piece of the background, in this case, an empty sky, you can easily fill that piece in.
-If you hide a random part of an object, you can easily imagine that hidden part---its contents are largely-defined by the visible parts of the object.
+If you hide a random part of an object, you can easily imagine that hidden part---its contents are largely defined by the visible parts of the object.
 If you hide a semantically-meaningful piece of an object, e.g., the balloon part of an air balloon, you have a somewhat harder task.
 Now you know that there should be a balloon because you can see a basket.
 Based on the context, you know that it probably belongs under a balloon.
