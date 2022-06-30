@@ -43,7 +43,7 @@ And yet, you are unaware that any information is missing: you seem to see what i
 See for yourself!
 
 <figure id='blind_spot_test'>
-  <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/blind_spot_test.jpeg" alt="blind spot test"/>
+  <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/blind_spot_test.png" alt="blind spot test"/>
   <figcaption align='center'>
   <b>Fig 2:</b> Test your blind spot: cover your left eye, and focus your right eye on the plus (or do the opposite for the left eye). Move closer to the screen, such that the distance to your face is roughly three times the distance between symbols. Move your head back and forth. At some point, the circle should disappear. That's your blind spot!
   Inspired by <a href="https://en.wikipedia.org/wiki/Blind_spot_(vision)">Wikipedia</a>.
