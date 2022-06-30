@@ -340,7 +340,7 @@ If you're interested, have a look at the [ADIOS paper](https://arxiv.org/abs/220
 
 #### Acknowledgements
 I would like to thank [Yuge Shi](https://yugeten.github.io/) for doing most of the work behind the ADIOS paper.
-Huge thanks to Yuge Shi and [Sandy Huang](https://shhuang.github.io/) for proofreading and providing helpful suggestions for this blog.
+Huge thanks to Yuge Shi, [Sandy Huang](https://shhuang.github.io/) and [Fabian Fuchs](https://fabianfuchsml.github.io/) for proofreading and providing helpful suggestions for this blog.
 
 
 #### Footnotes
