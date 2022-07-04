@@ -67,7 +67,7 @@ This is rarely problematic, because conscious reasoning relies on high-level abs
 Since the representations we try to learn are usually used in such higher-level reasoning tasks, perhaps reconstruction is not the right way to go?
 
 We will come back to this question later.
-For now, we will look at a few methods that do involve reconstruction.
+For now, we will look at a few methods that involve reconstruction.
 
 # BERT or Why Inpaint for Representation Learning?
 
@@ -139,7 +139,7 @@ A visual word is a group of pixels, but it is not a random group.
 Rather, it's a group of pixels that represents something meaningful like an object, but also a property or a relation.[^pixel_representing_relation].
 Imagine a man wearing a red jacket.
 
-[^pixel_representing_relation]: [Sjoerd van Steenkiste](https://www.sjoerdvansteenkiste.com/) pointed out that there may be no such thing as a pixel representing a relation, e.g., no group of pixels may represent "heavier than" or even "bigger than". While I agree, I'd like to note that masking pixels can obscure such relations. In case of "bigger than", a mask can occlude a part of an object making its size difficult to determine. This may be useful for representation learning.
+[^pixel_representing_relation]: [Sjoerd van Steenkiste])(https://www.sjoerdvansteenkiste.com/) pointed out that there may be no such thing as a pixel representing a relation, e.g., no group of pixels may represent "heavier than" or even "bigger than". While I agree, I'd like to note that masking pixels can obscure such relations. In case of "bigger than", a mask can occlude a part of an object making its size difficult to determine. This may be useful for representation learning.
 
 * To mask "red", we need to occlude most of a jacket, perhaps leaving its outline.
 * To mask "jacket" without masking its color, we can mask its outline but leave a pixel here or there.
@@ -182,8 +182,37 @@ A visual word like that could correspond to an eye or a car wheel.
 While I haven't tried it, it would be interesting to adapt this paradigm for MIM.
 
 #### Learning Visual Words
-The modern alternative is to learn what a visual word is. To understand how visual words can be learned, let's think about what categories of masks we can expect.
+<!-- <figure id='klaus_talk'>
+  <div id="presentation-embed-38930701" style="width: 10%;"></div>
+  <script src="https://slideslive.com/embed_presentation.js"></script>
+  <script>
+    embed = new SlidesLiveEmbed("presentation-embed-38930701", {
+      presentationId: "38930701",
+      autoPlay: false,
+      verticalEnabled: false,
+    });
+  </script>
+  <figcaption align='center'>
+  "What are Objects" by Klaus Greff, Object-Oriented Learning Workshop at ICML 2020.
+  </figcaption>
+</figure>
+
+-->
+The modern alternative is to learn what a visual word is.
+This is exactly what we do in [Shi et al., "Adversarial Masking for Self-Supervised Learning", ICML 2022](https://arxiv.org/abs/2201.13100) ([`code`](https://github.com/YugeTen/adios)), which introduces a reconstruction-free MIM model called ADIOS.
+If you're hungry for details, look at the paper.
+Here, I'll provide some intuitions.
+[SemMAE](https://arxiv.org/abs/2206.10207), which just came out, provides an alternative way of learning visual-word-like masks.
+
+To understand how visual words can be learned, let's think about what categories of masks we can expect.
 We can do it by looking at some air balloons.
+
+<!-- The alternative is to think about the properties of the desired masks.
+If we want object-like masks, we should probably look at what an object is---a good place to start is Klaus Greff's talk from the 2020 ICML workshop on Object-Centric Learning above.
+The perhaps surprising takeout is that objects are challenging to define.
+The good thing is that, when it comes to images, we can think about objects as groups of pixels.
+And we can learn which groups correspond to objects or to other patterns that are useful to mask when it comes to representation learning.
+Let's have a look at some air balloons. -->
 
 <figure id='masked_balloons'>
   <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/masked_balloons.png" alt="masked balloons"/>
@@ -216,15 +245,9 @@ For now:
 [^bg_correlation]: See that, according to above, the background behaves just like a big object behind the objects in the foreground.
 
 By now, this is a widely-accepted view.
-I would go a step further and say that pixels representing a relation[^pixel_representing_relation] (e.g., two objects that often appear together), or a property, are also strongly correlated; therefore, they are possible to infer from a partial observation.
+I would go a step further and say that pixels representing a relation (e.g., two objects that often appear together), or a property, are also strongly correlated; therefore, they are possible to infer from a partial observation.
 
 The above intuition can be formalized as a training objective.
-This is exactly what we do in [Shi et al., "Adversarial Masking for Self-Supervised Learning", ICML 2022](https://arxiv.org/abs/2201.13100) ([`code`](https://github.com/YugeTen/adios)).
-
-# **Ad**versarial **I**nference-**O**cclusion **S**elf-supervision (ADIOS)
-
-[ADIOS](https://arxiv.org/abs/2201.13100) is a reconstruction-free MIM model that learns to mask in an adversarial fashion.
-
 Imagine a setup where you try to inpaint an image with some parts occluded.
 To get the mask, we instantiate a masking model whose job is to make inpainting as difficult as possible, subject to some constraints (see below).
 The result?
@@ -232,6 +255,12 @@ You get masks that seem to hide objects or their parts.
 You also get better representation learning results than with using MAE's masks[^learned_masks_for_mae].
 
 [^learned_masks_for_mae]: The caveat is that using such learned masks requires feeding the whole image into the encoder. This results in a significantly increased computation cost for MAE and might not be practical.
+
+<!-- I did this in an early prototype a few years ago.
+For CLEVR, the result was a mask covering objects very well, but only early in training.
+Later, the mask starts covering parts of the background, but in such a way that is suggestive of an object being there.
+This confuses the inpainter, and forces it to paint an object where there was none.
+This is perhaps ok: the goal is not to get semantic segmentation out of this but rather semantically-meaningful masks that can force a representation-learning model to reason about objects, properties, or relations. -->
 
 What constrains masking whole objects, or the entire image for that matter?
 First, we predict several masks while making sure that each pixel is masked only once.
@@ -245,12 +274,7 @@ That's why we resort to reconstruction-free representation learning (RFL)[^RFL].
 
 [^RFL]: While I don't like creating acronyms, I find that the currently available options are somewhat lacking. All representation learning algorithms we care about are unsupervised (self-supervised **is** unsupervised). The ones that require image reconstruction (inpainting, e.g., MAE) use one encoder and one decoder. The ones that do not require reconstruction (e.g., SimCLR) use two encoders and no decoder. The latter were called contrastive (but some methods do not use negative examples) and later self-supervised learning (SSL; but this is too broad since MAE is also SSL). Hence, I adopt "reconstruction-free learning (RFL)" to distinguish these two paradigms. An alternative that focuses on architecture would be "Siamese-Style Learning"---maybe this is better because it uses the same acronym?
 
-<figure id='adios_masks'>
-  <img style="display: box; margin: auto" src="{{site.url}}/resources/masked_image_modelling/adios_masks.png" alt="ADIOS masks"/>
-  <figcaption align='center'>
-  <b>Fig 6:</b> Masks generated by ADIOS on the <a href="https://cs.stanford.edu/~acoates/stl10/">STL-10 dataset</a>. There are six color-coded masks for each image. While some parts appear random, some clearly cover object parts.
-  </figcaption>
-</figure>
+# [**Ad**versarial **I**nference-**O**cclusion **S**elf-supervision (ADIOS)](https://arxiv.org/abs/2201.13100)
 
 ADIOS applies to any siamese-style representation learning algorithm (contrastive or otherwise) where the training is done by minimizing some distance between representations.
 Here we compare a generic algorithm with its ADIOS-augmented version.
@@ -258,7 +282,7 @@ The ADIOS-specific parts are highlighted in green.
 
 <div>
   <div style="float: left; width: 50%;">
-    <center><b>Generic Reconstruction-Free Learning</b></center>
+    <center><b>Generic reconstruction-free learning</b></center>
     <ol>
       <li>Take an image x.</li>
       <li>Create two views of that image, a and b.</li>
@@ -270,6 +294,7 @@ The ADIOS-specific parts are highlighted in green.
     <br>
     <br>
   </div>
+  <!-- <div style="float: left; width: 10%;"> </div> -->
   <div style="float: right; width: 50%;">
   <center><b>ADIOS</b></center>
   <ol>
@@ -282,6 +307,12 @@ The ADIOS-specific parts are highlighted in green.
   </ol>
   </div>
 </div>
+
+<!-- 1. Take an image x.
+2. Create two views of that image, a and b.
+3. Encode the views with either the same or separate neural nets (with parameters \theta to get two representations z_a and z_b.
+4. Compute a loss L(z_a, z_b).
+5. Update the parameters of the neural net(s) by minimizing that loss with respect to \theta. -->
 
 In ADIOS, we want one of the image views, say b, to be masked.
 The mask m = mask(b) is conditioned on the image and is predicted by another neural net with parameters $$\phi$$.
@@ -308,28 +339,26 @@ Option 1. means encoding no information (representation collapse) and is usually
 That leaves option 2. and forces the model to reason about occluded parts.
 The masking model is trying to make 2. more difficult. Hence it learns to mask strongly-correlated groups of pixels, which often correspond to semantically-meaningful object parts, but do not necessarily correspond to objects---as discussed.
 
+That's it! Hope you enjoyed the blog and have a better understanding of why inpainting leads to good representations in vision and what makes a good mask.
+If you're interested, have a look at the [ADIOS paper](https://arxiv.org/abs/2201.13100) for more details, and play with the [`code`](https://github.com/YugeTen/adios)!
 
-# Summary
+# Conclusions
+come back to MIM with reconstruction vs reconstruction-free learning
 
-That's it! If you got this far, you learned about visual blind spots and (hopefully) found your own, which gives you a pretty good idea how much inpainting our brains do.
-This is similar to masking and then inpainting images, which leads to some state-of-the-art representation learning.
-You also know that semantically-meaningful masks lead to even stronger results than random masks, and you've seen a couple of ways to get such masks.
+<!-- Some interesting things to do:
+* Figure out how to learn masks for MAE w/o processing the whole image with the encoder, and perhaps with higher granularity than afforded by masking individual patches.
+* Run large-scale experiments with full ImageNet or even bigger datasets, large ResNets, and large ViTs.
+* Experiment with stronger inductive biases for the masking model like [slot-attention](a) or [GENESIS](a). -->
 
-So is pixel-level reconstruction the right way to go if you want to get good representations?
-While we do not have a definitive answer, we show through ADIOS that reconstructions are not always necessary, and that the motivation behind reconstruction-based MIM models does extend to the reconstruction-free setting.
 
-If you're interested in more details behind ADIOS, have a look at the [paper](https://arxiv.org/abs/2201.13100), and play with the [`code`](https://github.com/YugeTen/adios)!
-Here are a few things you could try:
-* Figure out how to learn masks for MAE without processing the whole image with the encoder, and perhaps with higher granularity than afforded by masking individual patches.
-* Experiment with stronger inductive biases for the masking model like [slot-attention](https://proceedings.neurips.cc/paper/2020/hash/8511df98c02ab60aea1b2356c013bc0f-Abstract.html) or [GENESIS](https://arxiv.org/abs/1907.13052).
+<!-- Following the balloon example above, we see that the most-difficult-to-inpaint are masks that cover whole objects. They aren't pixel-perfect segmentation masks because the clear outline would be highly informative of the object. But blobby-looking masks covering whole objects wouldn't be very useful either, at least not at the beginning of training. This is because predicting a fully-occluded object is too difficult a task that only a very strong model (well-trained, say) may be capable of. -->
 
-Further reading:
-* [SemMAE](https://arxiv.org/abs/2206.10207), which came out a few days ago, provides an alternative way of learning visual-word-like masks by using arg-maxed attention from another transformer.
-* ["On the Binding Problem in Artificial Neural Networks"](https://arxiv.org/abs/2012.05208) from [Klaus Greff](https://qwlouse.github.io/) and
-[Sjoerd van Steenkiste])(https://www.sjoerdvansteenkiste.com/) discusses at length what objects are and how to represent them in neural networks.
 
 #### Acknowledgements
-Huge thanks to [Yuge Shi](https://yugeten.github.io/) for doing most of the work behind the ADIOS paper.
-I would also like to thank [Yuge Shi](https://yugeten.github.io/), [Sandy Huang](https://shhuang.github.io/), [Fabian Fuchs](https://fabianfuchsml.github.io/), [Klaus Greff](https://qwlouse.github.io/), and [Sjoerd van Steenkiste])(https://www.sjoerdvansteenkiste.com/) for proofreading and providing helpful suggestions for this blog.
+I would like to thank [Yuge Shi](https://yugeten.github.io/) for doing most of the work behind the ADIOS paper.
+Huge thanks to Yuge Shi, [Sandy Huang](https://shhuang.github.io/) and [Fabian Fuchs](https://fabianfuchsml.github.io/) for proofreading and providing helpful suggestions for this blog.
+
+[Klaus Greff](https://qwlouse.github.io/)
+[Sjoerd van Steenkiste])(https://www.sjoerdvansteenkiste.com/)
 
 #### Footnotes
