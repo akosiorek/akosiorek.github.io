@@ -298,7 +298,7 @@ RFL minimizes the distance between representations extracted from two views of t
 That distance is minimized when the encoders are invariant to the transformations applied to the source image.
 Here is a simple example: if we use a color image and a grayscale version of that same image, we will get a representation that encodes the content (e.g., objects) and even brightness, but not the hue.
 Hence, we say, the representation is invariant to hue variations.
-See [Fabian Fuch's blog](https://fabianfuchsml.github.io/equivariance1of2/) for a longer discussion of equivariance and invariance.
+See [Fabian Fuchs' blog](https://fabianfuchsml.github.io/equivariance1of2/) for a longer discussion of equivariance and invariance.
 
 Using a masked image as one of the views means that we want a representation that is invariant to masking.
 There are two ways to do this:
