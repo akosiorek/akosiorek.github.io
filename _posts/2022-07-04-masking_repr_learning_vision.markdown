@@ -328,10 +328,10 @@ Here are a few things you could try:
 Further reading:
 * [SemMAE](https://arxiv.org/abs/2206.10207), which came out a few days ago, provides an alternative way of learning visual-word-like masks by using arg-maxed attention from another transformer.
 * ["On the Binding Problem in Artificial Neural Networks"](https://arxiv.org/abs/2012.05208) from [Klaus Greff](https://qwlouse.github.io/) and
-[Sjoerd van Steenkiste])(https://www.sjoerdvansteenkiste.com/) discusses at length what objects are and how to represent them in neural networks.
+[Sjoerd van Steenkiste](https://www.sjoerdvansteenkiste.com/) discusses at length what objects are and how to represent them in neural networks.
 
 #### Acknowledgements
 Huge thanks to [Yuge Shi](https://yugeten.github.io/) for doing most of the work behind the ADIOS paper.
-I would also like to thank [Yuge Shi](https://yugeten.github.io/), [Sandy Huang](https://shhuang.github.io/), [Fabian Fuchs](https://fabianfuchsml.github.io/), [Klaus Greff](https://qwlouse.github.io/), and [Sjoerd van Steenkiste])(https://www.sjoerdvansteenkiste.com/) for proofreading and providing helpful suggestions for this blog.
+I would also like to thank [Yuge Shi](https://yugeten.github.io/), [Sandy Huang](https://shhuang.github.io/), [Fabian Fuchs](https://fabianfuchsml.github.io/), [Klaus Greff](https://qwlouse.github.io/), and [Sjoerd van Steenkiste](https://www.sjoerdvansteenkiste.com/) for proofreading and providing helpful suggestions for this blog.
 
 #### Footnotes
