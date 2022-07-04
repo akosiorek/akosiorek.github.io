@@ -11,7 +11,7 @@ categories: ml
 
 Masked-image modeling (MIM) is about inpainting; that is, covering parts of an image and then trying to recover what was hidden from what is left.
 Recently, it has led to state-of-the-art representation learning in images[^sota_repr_learn].
-In this blog, I will dive into why masked images deliver such a powerful learning signal and think about what may constitute a good mask.
+In this blog, I will dive into why masked images deliver such a powerful learning signal, think about what may constitute a good mask, and discuss my recent paper ([ADIOS](https://arxiv.org/abs/2201.13100)) which attempts to learn good masks for representation learning.
 But let's start with some motivation.
 
 [^sota_repr_learn]: [MAE](https://arxiv.org/abs/2111.06377), [BEiT](https://arxiv.org/abs/2106.08254), [SemMAE](https://arxiv.org/abs/2206.10207) as well as our paper [ADIOS](https://arxiv.org/abs/2201.13100), which is discussed further below.
