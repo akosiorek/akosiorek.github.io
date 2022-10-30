@@ -26,7 +26,7 @@ I've also just started to be really thirsty.
 
 Not to worry. I've been there a thousand times and I know what to do.
 For thirst, I prepare water with electrolytes[^electrolytes].
-For meditation, I sit cross-legged: time to meditate.
+For anxiety, I sit cross-legged: time to meditate.
 20 min later the anxiety is gone. But I'm feeling profoundly tired.
 Time to lie down.
 
