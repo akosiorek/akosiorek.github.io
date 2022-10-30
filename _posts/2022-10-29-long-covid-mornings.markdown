@@ -50,7 +50,7 @@ Let's do another round of meditation.
 It's 10am. Let's write this blog. It might be helpful to someone. It takes about
 an hour. At the end, I downed another litre of electrolyte water. I'm still thirsty, so I make another one. The thirst will go away in another 2 or 3 litres.
 
-I'm also surprising I'm not tired, though minor breathing difficulties set in: it feels like there's a weight at the bottom of my ribcage that I need to push out with every breath.
+I'm also surprising I'm not tired, though minor breathing difficulties have set in: it feels like there's a weight at the bottom of my ribcage that I need to push out with every breath.
 If things go well I might go out for a walk today, maybe even see a friend.
 I'll probably do another 20 min meditation, 20 min breathing exercises, and at least 20 min
 Sensate, just to get through the day.
