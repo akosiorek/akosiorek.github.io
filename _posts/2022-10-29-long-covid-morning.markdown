@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "A Long COVID Morning"
+title:  "A Morning with Long COVID"
 date:   2022-10-29 00:44:17 +0000
 comments: True
 share: True
