@@ -6,8 +6,12 @@ comments: True
 share: True
 categories: long-covid
 ---
+Long COVID is a bitch. I know, because I've been suffering from long COVID for a few months now.
+Given the little media coverage LC receives, it is not surprising that very few people realize how bad it is or how prevalent it is. The fact is that, upon COVID infection, a triple-vaccinatied person has about 4% chance of contracting brain damage or becoming effectively disabled (bed bound for days on end) due to long COVID. An [estimated 2 million people](https://twitter.com/ONS/status/1577939683618742273) in the UK alone suffer from LC. This is very unsettling.
 
-I've been suffering from long COVID for a few months now. It's been getting better, but due to COVID reinfection about 3 weeks ago I'm back in the gutter. It is improving, albeit very slowly and non-linearly. I try to stay optimistic. Below I share a description of a recent morning and some of my coping strategies. Hope this helps!
+The risk is too great to be ignored; the disability too powerful to be suffered alone. This is why I decided to share my experiences. If I get the signal that it proves useful, I'll keep sharing.
+
+My long COVID has been getting better, but due to COVID reinfection about 3 weeks ago I'm back in the gutter. It is improving, albeit very slowly and non-linearly. I try to stay optimistic. Below I share a description of a recent morning and some of my coping strategies. Hope this helps!
 
 ---
 
@@ -35,7 +39,8 @@ Time to lie down.
 [^electrolytes]: I use the [LMNT recipe](https://drinklmnt.com/blogs/health/the-best-homemade-electrolyte-drink-for-dehydration) with 1g sodium equivalent per 1l of water. Here's [a recipe for 200 portions](https://docs.google.com/document/d/1JeQcUnEv6Sz6PJnuP59c4cZ9iBqBr2AA_otpm1RkdvE/edit?usp=sharing).
 
 I go to bed to do a 20 min [Sensate](https://www.getsensate.com) session. It's the best way I found to relax.
-Lying down with my eyes closed provides a kind of sensory deprivation that is super useful for recovery from the long-COVID tiredness ([twitter study](https://twitter.com/organichemusic/status/1582318635460485122?t=feJK9kW5n8rz1duKvm5shQ&s=19); VGS is e.g. Sensate). Sensate provides vagus nerve stimulation[^VGS] that down-regulates the central nervous system and helps escape the near-constant, infection-induced fight-or-flight mode (extremely
+Lying down with my eyes closed provides a kind of sensory deprivation that proves
+essential for recovery from the long-COVID tiredness ([twitter study](https://twitter.com/organichemusic/status/1582318635460485122?t=feJK9kW5n8rz1duKvm5shQ&s=19); VGS is e.g. Sensate). Sensate provides vagus nerve stimulation[^VGS] that down-regulates the central nervous system and helps escape the near-constant, infection-induced fight-or-flight mode (extremely
 tiring in itself).
 
 [^VGS]: Sensate is expensive and time-consuming with a session lasting 10-20 min. There are cheaper devices out there that provide e.g. electrical stimulation to your inner ear, which takes only about a minute or two.
@@ -61,6 +66,6 @@ It's been a great day so far.
 
 ---
 
-I consider the above morning to be quite good. Yes, I needed a lot of rest, but I managed to stay motivated and take care of myself. Some mornings resting does not help and all I have energy for is listening to an audiobook for the remainder of the day. Other times, I may not be in a good enough place mentally to even engage in self-care practices. When this happens I tend to watch Netflix, which in itself is quite tiring for me (as is visual processing and social engagement). Unfortunately, long COVID comes with a slew of mental health issues. Sometimes it's really challenging, but I try to stay optimistic.
+I consider the above morning to be quite good. Yes, I needed a lot of rest, but I managed to stay motivated and take care of myself. Some mornings resting does not help and all I have energy for is listening to an audiobook for the remainder of the day. Other times, I may not be in a good enough place mentally to even engage in self-care practices. When this happens I tend to watch Netflix, which in itself is quite tiring for me (as is visual processing and social engagement). Unfortunately, long COVID comes with a slew of mental health issues. I try to stay optimistic, but sometimes it is just too much.
 
 #### Footnotes
