@@ -62,6 +62,6 @@ It's been a great day so far.
 
 ---
 
-I consider the above morning to be quite good. Yes, I needed a lot of rest, but I managed to stay positive. Some mornings the rest does not help and all I have energy for is listening to an audiobook for the rest of the day. Other times, I may not be in a good enough place mentally to even engage in rest practice that could help. When this happens I tend to watch Netflix, which in itself is quite tiring for me (as is visual processing and social engagement). Unfortunately, long COVID comes with a slew of mental health issues. I try to stay optimistic, but sometimes it is just too much.
+I consider the above morning to be quite good. Yes, I needed a lot of rest, but I managed to stay motivated and take care of myself. Some mornings resting does not help and all I have energy for is listening to an audiobook for the remainder of the day. Other times, I may not be in a good enough place mentally to even engage in self-care practices. When this happens I tend to watch Netflix, which in itself is quite tiring for me (as is visual processing and social engagement). Unfortunately, long COVID comes with a slew of mental health issues. I try to stay optimistic, but sometimes it is just too much.
 
 #### Footnotes
