@@ -35,7 +35,7 @@ Time to lie down.
 [^electrolytes]: I use the [LMNT recipe](https://drinklmnt.com/blogs/health/the-best-homemade-electrolyte-drink-for-dehydration) with 1g sodium equivalent per 1l of water. Here's [a recipe for 200 portions](https://docs.google.com/document/d/1JeQcUnEv6Sz6PJnuP59c4cZ9iBqBr2AA_otpm1RkdvE/edit?usp=sharing).
 
 I go to bed to do a 20 min [Sensate](https://www.getsensate.com) session. It's the best way I found to relax.
-Lying down with my eyes closed provides a kind of sensory deprivation is super useful for recovery from the long-COVID tiredness ([twitter study](https://twitter.com/organichemusic/status/1582318635460485122?t=feJK9kW5n8rz1duKvm5shQ&s=19); VGS is e.g. Sensate). Sensate provides vagus nerve stimulation[^VGS] that down-regulates the central nervous system and helps escape the near-constant, infection-induced fight-or-flight mode (extremely
+Lying down with my eyes closed provides a kind of sensory deprivation that is super useful for recovery from the long-COVID tiredness ([twitter study](https://twitter.com/organichemusic/status/1582318635460485122?t=feJK9kW5n8rz1duKvm5shQ&s=19); VGS is e.g. Sensate). Sensate provides vagus nerve stimulation[^VGS] that down-regulates the central nervous system and helps escape the near-constant, infection-induced fight-or-flight mode (extremely
 tiring in itself).
 
 [^VGS]: Sensate is expensive and time-consuming with a session lasting 10-20 min. There are cheaper devices out there that provide e.g. electrical stimulation to your inner ear, which takes only about a minute or two.
@@ -61,6 +61,6 @@ It's been a great day so far.
 
 ---
 
-I consider the above morning to be quite good. Yes, I needed a lot of rest, but I managed to stay motivated and take care of myself. Some mornings resting does not help and all I have energy for is listening to an audiobook for the remainder of the day. Other times, I may not be in a good enough place mentally to even engage in self-care practices. When this happens I tend to watch Netflix, which in itself is quite tiring for me (as is visual processing and social engagement). Unfortunately, long COVID comes with a slew of mental health issues. I try to stay optimistic, but sometimes it's really challenging.
+I consider the above morning to be quite good. Yes, I needed a lot of rest, but I managed to stay motivated and take care of myself. Some mornings resting does not help and all I have energy for is listening to an audiobook for the remainder of the day. Other times, I may not be in a good enough place mentally to even engage in self-care practices. When this happens I tend to watch Netflix, which in itself is quite tiring for me (as is visual processing and social engagement). Unfortunately, long COVID comes with a slew of mental health issues. Sometimes it's really challenging, but I try to stay optimistic.
 
 #### Footnotes
