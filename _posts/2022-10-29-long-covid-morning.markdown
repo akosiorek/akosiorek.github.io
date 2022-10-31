@@ -7,7 +7,7 @@ share: True
 categories: long-covid
 ---
 Long COVID is a bitch. I know, because I've been suffering from long COVID for a few months now.
-Given the little media coverage LC receives, it is not surprising that very few people realize how bad it is or how prevalent it is. The fact is that, upon COVID infection, a triple-vaccinatied person has about 4% chance of contracting brain damage or becoming effectively disabled (bed bound for days on end) due to long COVID. An [estimated 2 million people](https://twitter.com/ONS/status/1577939683618742273) in the UK alone suffer from LC. This is very unsettling.
+Given the little media coverage LC receives, it is not surprising that very few people realize how bad it is or how prevalent it is. The fact is that, upon COVID infection, a triple-vaccinatied person has about [4% chance](https://twitter.com/cjmaddison/status/1578177811491475456) of contracting brain damage or becoming effectively disabled (bed bound for days on end) due to long COVID. An [estimated 2 million people](https://twitter.com/ONS/status/1577939683618742273) in the UK alone suffer from LC. This is very unsettling.
 
 The risk is too great to be ignored; the disability too powerful to be suffered alone. This is why I decided to share my experiences. If I get the signal that it proves useful, I'll keep sharing.
 
