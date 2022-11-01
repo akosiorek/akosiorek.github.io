@@ -17,9 +17,11 @@ My long COVID has been getting better, but due to COVID reinfection about 3 week
 
 I wake up at 7 am feeling a little groggy, and hungry.
 I start my day with a healthy breakfast[^breakfast].
-I eat in front of a SAD lamp. It makes the grogginess go away and helps me sleep better at night. It really helps. At the end of breakfast, I'm not groggy anymore; I'm starting to feel quite good.
+I eat in front of a SAD lamp[^SAD]. It makes the grogginess go away and helps me sleep better at night. It really helps. At the end of breakfast, I'm not groggy anymore; I'm starting to feel quite good.
 
 [^breakfast]: My breakfast consists of eggs and fruit. For eggs, I have 2 organic eggs sunny-side up fried on a tsp bacon served with a cup of steamed spinach with chili, turmeric, and salt, half a cup of black beans, and half a cup sauerkraut. For fruit, I have a bowl of blueberries with 100g fat-free greek yogurt, tbsp ground flaxseed, tsp cocoa powder, a shake of cinnamon, and a bit of turmeric. It may sound complicated, but using canned beans and frozen spinach, it takes just a few minutes to prep. I like my food to be yummy, nutritious, and healthy. This breakfast is a compromise between Tim Ferriss's "4 Hour Body" and Micheal Greger's "How Not to Die".
+
+[^SAD]: Sunlight exposure just after waking up is recommended by top sleep scientists (Matthew Walker in his "Why we sleep" book, and Andrew Huberman in his podcasts). It makes you feel better during the day and improves sleep by regulating the circadian rythm. In the absence of sunlight (early morning wakeups, winter), they recommend using a [SAD lamp](https://www.healthline.com/health/sad-lamp) originally developed for treating [seasonal affective disorder](https://www.healthline.com/health/seasonal-affective-disorder).
 
 It's 8 am.
 It's going to be a great day.
