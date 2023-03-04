@@ -1,6 +1,6 @@
 ---
 layout: draft
-title:  "Injecting Geometry into Image Diffusion Models"
+title:  "Geometry in Text-to-Image Diffusion Models"
 date:   2023-02-01 16:23:0 +0000
 categories: ml
 ---
@@ -65,6 +65,8 @@ Or maybe you can, but the results will look a bit crappy: this is because you ar
   <script async="" src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 </div>
 
+<!-- This is a bit sad, because we know that text-to-image diffusion models, at least the large-scale ones, knows about geometry. -->
+
 To make the above work really well, we would need to model not only views of a given scene (images), but also the geometry (where things are, where was the camera that captured those views). If we have the geometry, we can explicitly move the camera into a new position and capture the next image from there. If you can do this, you unlock a plethora of additional applications like generating whole scenes or 3D assets for virtual reality, computer games or special effects in movies, for interior design, or any other artistic endevour, really.
 
 But building generative models of 3D scenes or objects is not easy. In my work I focused on VAE-based generative models of NeRFs ([NeRF-VAE](https://arxiv.org/abs/2104.00587) and [Laser-NV](https://laser-nv-paper.github.io/index.html)). In principle, these models offer very similar capabilities[^nerf_vae_text_cond]. In practice, the quality of the generated 3D content is far far behind what text-to-image diffusion model generate these days. This is in part due to a different framework (diffusion models instead of VAEs) and in part due to data availability.
@@ -74,6 +76,8 @@ But building generative models of 3D scenes or objects is not easy. In my work I
 <!-- - in principle we could apply similar methods to model 3d scenes or objects, but we don't have data -->
 In principle, we could take the diffusion modelling techniques used for image generation and apply them to 3D. That's what e.g. [GAUDI](https://arxiv.org/abs/2207.13751) does. However, even then we are limited by the availability of the data.
 While it is easy to scrape billions of images and associated text captions from the Internet, this really isn't the case for 3D. To do 3D modelling with NeRF (used in my work and in GAUDI above), you need several images and associated camera viewpoints for every scene, and then you need millions if not billions of scenes in your dataset. This data does not exist on the Internet, because that's not how people take (or post) pictures. Considering the scale, manually capturing such datasets is out of the question. The only respite is video, where different frames are captured from slightly different viewpoints, but video-modelling opens up another can of worms: since the scene isn't static, it is diffiult to learn a scene representation that will be consistent across views (that preserves the geometry). The video diffusion models certainly do not offer multi-view consistency ([Imagen Video](https://imagen.research.google/video/), [Make-a-Video](https://makeavideo.studio/)). Nevertheless, video-modelling with GAUDI-like models is the most promosing direction for future large-scale 3D models.
+
+### Text-to-Image Models Known About Geometry
 
 <!-- - but do we really need to train from 3d data? clearly, the 2d image models know about geomtry -->
 But here's the thing. We can play with the text-to-image models by manipulating the text prompt, which then shows that these models actually know about geometry. Perhaps the best example of this is [DreamBooth](https://dreambooth.github.io/).
@@ -87,16 +91,28 @@ But here's the thing. We can play with the text-to-image models by manipulating 
 
 If text-to-image models really know about 3D geometry, maybe we don't need all that 3D data? Maybe we can just use the image models and either extract their 3D knowledge, or perhaps somehow nudge them to preserve geometry across multiple generated images.
 <!-- - it turns out that we can, at least in some cases, leverage pretrained image diffusion models as priors for 3D -->
-It turns out that both approaches are possible, do not require re-training the text-to-image models, and correspond to [DreamFusion](https://dreamfusion3d.github.io)/[Score Jacobian Chaining](https://pals.ttic.edu/p/score-jacobian-chaining) and [SceneScapes](https://scenescape.github.io), respectively.
+It turns out that both approaches are possible, do not require re-training the text-to-image models, and correspond to extracting geometry from an image model ([DreamFusion](https://dreamfusion3d.github.io) and [Score Jacobian Chaining](https://pals.ttic.edu/p/score-jacobian-chaining)), and injecting geometry into an image model ([SceneScapes](https://scenescape.github.io)), respectively.
 
 <!-- - in this blog, I'm going to talk about one such case: injecting geometry into a text-to-image diffusion model -->
 In this blog I'm going to talk about the latter, which injects explicit geometry into a text-to-image diffusion model.
-I've been actually working on this idea for a couple of weeks now, but now that it is published (as of 3 days ago), I don't have to work on it any more and can write this blog instead :)
 
+
+### Extracting Geometry from an Image Model
+dreamfusion
+
+### Injecting Geometry into an Image Model
+I've actually started working on this idea a couple of weeks before [SceneScapes](https://scenescape.github.io) was published. Now, with the problem mostly solved, I can describe the (published) approach in this blog :)
+
+The main idea behind the SceneScapes algorithm is that an image diffusion model is able to correct image imperfections with its superb inpainting abilities. Now imagine that we have an image captured from a given camera position, and we pretend to move to a different camera position. We can now warp the image we have into what that image would look like if seen from the new camera position. This image will be imperfect:
+- Specularities and other view-dependent lighting effects will be incorrect.
+- It will have holes because not everything was observed.
+
+But mostly, the image will look ok. The diffusion model can fill in the holes, and possibly even fix the lighting artifacts: there you go, we just created a new image, taken from a different camera position, that is geometrically consistent (distances are the same) and semantically consistent (the things visible in the first image are still there and are the same). The best part? We used an off-the-shelf pretrained image model. It doesn't even have to be a diffusion model: all we need is the inpainting ability.
+
+#### Technical: SceneScapes Algorithm
 
 <!-- - algorithm -->
-
-A naive version of the SceneScapes algorithm requires:
+A naive version of the [SceneScapes](https://scenescape.github.io) algorithm requires:
 - a pretrained text-to-image diffusion model capable of inpainting missing values,
 - a pretrained depth-from-a-single-image predictor,
 - a method to infer intrinsic camera parameters for an RGBD image,
@@ -119,13 +135,21 @@ We then do the following:
 </figure>
 
 <!-- things needed to make it work -->
-- in fact, a paper describing it just came out https://scenescape.github.io/ https://arxiv.org/abs/2302.01133 Rafail Fridman, Amit Abecasis, Yoni Kasten, Tali Dekel Weizmann Institute of Science 2NVIDIA Research
-- only it turns out that there are rough edges that need to be smoothed out:
-  - reprojection from previously captured rgbd images is not great and is much better done by building a mesh as a global scene representation
-  - depth is inconcistent, so they fine-tune the depth predictor; so after projecting the mesh on a new camera they fine-tune the depth predictor to agree with the depth that came out from that projection. Once it agrees, they use the predictor for fill in any holes that the projected depth has. So they do optimization at every frame, don't mention how many iterations.
-  - the diffusion model they use is based on quantized VQVAE embeddings; they need to finetune the decoder for good reconstruction quality; similarly, they optimize it so that it agrees on the parts that are reprojected and then use the finetuned decoder to fill in any holes (rgb and colour will have the same holes)
-  - the inpainted part of the frame may not agree semantically very well with the text prompt; they generate multiple frames and then use cosine distance between the CLIP embeddings of the text and the generated frames to choose the frame that is best aligned with the prompt.
+Only it turns out that there are rough edges that need to be smoothed out (as done in the paper):
+- Reprojection from previously captured RGBD images is not great and is much better done by building a mesh as a global scene representation.
+- The depth predicted from single images is inconsistent across the images (the differences between depth do not respect the changes in camera position), so the authors fine-tune the depth predictor: after projecting the mesh on a new camera they fine-tune the depth predictor to agree with the depth that came out from that projection. Once the depth predictor agrees with the mesh, we can predict the values for the holes in the depth map. This requires optimization of the depth-predictor at every generated frame. The authors don't mention how many gradient steps it takes.
+- The diffusion model used in the paper is based on quantized VQVAE embeddings (I'm not sure but I'm guessing it's StableDiffusion, which follows Latent Diffusion?). Since VQVAE autoencoding results is somewhat low reconstruction quality, the authors need to finetune the VQVAE decoder as well to obtain good reconstruction quality. Similarly to the depth predictor, they first optimize it so that it agrees on these parts of the image that are reprojected from the mesh and then use the finetuned decoder to fill in any holes (RGB and depth will have the same holes).
+- Lastly, the inpainted part of the frame may not agree semantically with the text prompt very well; they generate multiple frames and then use cosine distance between the CLIP embeddings of the text and the generated frames to choose the frame that is best aligned with the prompt[^why_text_to_image_is_important].
 
-- Limitations:
-  - the mesh representation doesn't work well for outdoor scenes (depth disconituities between objects and the sky)
-  - there is error accumulation in long generated sequences that screw things up
+[^why_text_to_image_is_important]: a
+
+Limitations:
+- The mesh representation doesn't work well for outdoor scenes (depth disconituities between objects and the sky).
+- There is error accumulation in long generated sequences that sometimes lead to less-than-realistic results.
+
+
+### Conclusions
+
+#### Acknowledgements
+
+### Footnotes
