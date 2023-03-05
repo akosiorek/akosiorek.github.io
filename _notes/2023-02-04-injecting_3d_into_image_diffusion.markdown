@@ -23,7 +23,7 @@ closing thoughts
 <!-- takeoff of large-scale text-to-image generative models: diffusion + big data -->
 Generative modelling is as old as machine learning. But until recently, generative models were a bit like neural nets pre-2012 when AlexNet came out. People knew about them, but kept asking what you could really use them for. Well, 10 years after the original AlexNet, generative modelling had its AlexNet moment marked by the release of StableDiffusion (it even has a [Wiki page](https://en.wikipedia.org/wiki/Stable_Diffusion)), and later, ChatGPT. The revolution really isn't in the technology (which was present for a few years) but rather in the general capability of the models due to their scale and the size of the datasets used, and in their public availability.
 
-See [Sander Dieleman's post](https://benanne.github.io/2022/01/31/diffusion.html) for an intro to diffusion models and [another one](https://benanne.github.io/2022/05/26/guidance.html) on how to make them conditional.
+See Sander Dieleman's blog for an [intro to diffusion models]((https://benanne.github.io/2022/01/31/diffusion.html)) and a guide on [how to make them conditional](https://benanne.github.io/2022/05/26/guidance.html).
 
 <!-- Diffusion models very suddenly became the go-to models for generative modelling of images and videos, especially conditional on text. -->
 <!-- There are other models based on GANs and VQVAEs with autoregressive priors: these models didn't die, but I will not go into them here. -->
@@ -91,14 +91,43 @@ But here's the thing. We can play with the text-to-image models by manipulating 
 
 If text-to-image models really know about 3D geometry, maybe we don't need all that 3D data? Maybe we can just use the image models and either extract their 3D knowledge, or perhaps somehow nudge them to preserve geometry across multiple generated images.
 <!-- - it turns out that we can, at least in some cases, leverage pretrained image diffusion models as priors for 3D -->
-It turns out that both approaches are possible, do not require re-training the text-to-image models, and correspond to extracting geometry from an image model ([DreamFusion](https://dreamfusion3d.github.io) and [Score Jacobian Chaining](https://pals.ttic.edu/p/score-jacobian-chaining)), and injecting geometry into an image model ([SceneScapes](https://scenescape.github.io)), respectively.
-
-<!-- - in this blog, I'm going to talk about one such case: injecting geometry into a text-to-image diffusion model -->
-In this blog I'm going to talk about the latter, which injects explicit geometry into a text-to-image diffusion model.
+It turns out that both approaches are possible, do not require re-training the text-to-image models, and correspond to extracting geometry from an image model ([DreamFusion](https://dreamfusion3d.github.io) and [Score Jacobian Chaining (SJC)](https://pals.ttic.edu/p/score-jacobian-chaining)), and injecting geometry into an image model ([SceneScapes](https://scenescape.github.io)), respectively.
 
 
 ### Extracting Geometry from an Image Model
-dreamfusion
+Given that a text-to-image diffusion model knows about geometry (see DreamBooth above, though we don't need DreamBooth for this), it is reasonable to expect that we can use such a modal as a prior over 3D representations. Why? Because any 2D rendering of a 3D representation is an image, and if that representation contains an object that is similar to the training set of the image model, that rendered image should have high likelihood under the image model. Conversly, if the represented object is different from what the image model is trained on, the rendered image will have a low likelihood. Therefore, if we start from a representation of a random object, the generated images will have a low likelihood. But if we then manage to compute the gradients of the image model likelihood with respect to the 3D representation, we'll be able to nudge the 3D representation into something that has a bit higher likelihood under that image model. In practice, DreamFusion and SJC use pre-trained large-scale text-to-image diffusion models and evaluate the gradient with respect to the image as the score-matching objective, but it doesn't really matter. Any image model that is able to score a generated image is will do (a VAE, a discriminator of a GAN, or [even your classifier](https://arxiv.org/abs/1912.03263); it'd better be conditional, though; see the end of the blog).
+
+<figure id='dreamfusion_algo'>
+  <img style="width: 100%; display: box; margin: auto" src="{{site.url}}/resources/3d_diffusion/dreamfusion_algo.png"/>
+  <figcaption align='center'>
+  <b>Fig 5:</b> Extracting geometry from an text-to-image model into a NeRF, taken from <a href="https://dreamfusion3d.github.io">DreamFusion</a>.
+  </figcaption>
+</figure>
+
+The specific algorithm is as follows (the DreamFusion version):
+1. Initialize a random NeRF.
+2. Pick a random camera pose.
+3. Render an image at that camera pose using the NeRF.
+4. Compute the score-matching loss under a pre-trained diffusion model.
+5. Use the score-matching loss as a gradient with respect to the rendered image, and backpropagate it to NeRF's parameters.
+6. Go to step 2.
+
+Of course life is never that easy, and DreamFusion comes with a number of hacks, including: clipping the scene represented by the NeRF to a small ball around the origin (any densities outside of the ball are set to zero), putting the rendered object on different backgrounds, additional losses that ensure e.g. that most of the space is unoccupied.
+
+<figure id='sjc_examples'>
+  <img style="width: 100%; display: box; margin: auto" src="{{site.url}}/resources/3d_diffusion/sjc_examples.png"/>
+  <figcaption align='center'>
+  <b>Fig 6:</b> Images + depth maps generated by extracting geometry from StableDiffusion, taken from <a href="https://pals.ttic.edu/p/score-jacobian-chaining">Score Jacobian Chaining</a>.
+  </figcaption>
+</figure>
+
+As you can see in the above examples, extracting geometry from image models is able to, so far, produce cartoon-ish looking 3D models of single objects. Why is that? While noone really knows, I have some theories. The first hint is that this approach relies on classifier-free guidance with a very high guidance weight, which decrease the variance of the distribution (and its multimodality, see the end of this blog for a further discussion). The second bit is associated with the distribution of the cameras. If you are trying to model a general 3D scene (a part of a city or an apartment), the distribution of viable cameras is tightly coupled to the layout of the scene. In an apartment, say, randomly sampling cameras will yield cameras that are within walls and other objects. This will result in an empty image, which is unlikely under the model. Optimization in such case will lead to removing any objects that occlude the scene from the camera: in this case, it will remove everything, resulting in an empty scene.
+
+This approach predates injecting geometry into a diffusion model (described below), and already has a number of follow-ups.
+
+[RealFusion](https://arxiv.org/abs/2302.10663) is a view-conditioned version of DreamFusion. It does everything that DreamFusion does, but instead of a vanilla text-to-image diffusion model, they use DreamBooth, which is locked to a specific object shown by a target view. They also additionally minimize the reconstruction error of the NeRF on that target view.
+
+[NerfDiff](https://arxiv.org/abs/2302.10109) is another variation on DreamFusion, where they train a view-conditioned diffusion model on their target dataset. Training diffusion models is much easier than amortized NeRF, so such a diffusion model results in much higher quality outputs than training a NeRF directly on a dataset of scenes. What they do, however, is they trained a classic NeRF on just a single scene. Once it converged, they fine-tune it using the diffusion model loss, just like in DreamFusion. This results in a higher-quality NeRF, and potentially [todo: lookup in the paper] allows training the NeRF on a much smaller number of images. It would be nice if the authors used an amortized NeRF instead of a classic NeRF, which would speed the optimization process: instead of training a classic NeRF on a new scene and then fine-tuning it, you could just start from a NeRF predicted in a forward pass of a neural net, and then fine-tune that. Additionally, it'd be nice to train the view-conditioned diffusion model on a dataset of scenes and not just on a single scene [todo: check if this is the case].
 
 ### Injecting Geometry into an Image Model
 I've actually started working on this idea a couple of weeks before [SceneScapes](https://scenescape.github.io) was published. Now, with the problem mostly solved, I can describe the (published) approach in this blog :)
@@ -108,6 +137,13 @@ The main idea behind the SceneScapes algorithm is that an image diffusion model 
 - It will have holes because not everything was observed.
 
 But mostly, the image will look ok. The diffusion model can fill in the holes, and possibly even fix the lighting artifacts: there you go, we just created a new image, taken from a different camera position, that is geometrically consistent (distances are the same) and semantically consistent (the things visible in the first image are still there and are the same). The best part? We used an off-the-shelf pretrained image model. It doesn't even have to be a diffusion model: all we need is the inpainting ability.
+
+<figure id='scenescape_examples'>
+  <img style="width: 100%; display: box; margin: auto" src="{{site.url}}/resources/3d_diffusion/scenescape_example.png"/>
+  <figcaption align='center'>
+  <b>Fig 7:</b> <a href="https://scenescape.github.io/">SceneScape</a> is a bit more advanced than the simplified algorithm described above, but the idea is the same.
+  </figcaption>
+</figure>
 
 #### Technical: SceneScapes Algorithm
 
@@ -130,7 +166,7 @@ We then do the following:
 <figure id='scenescape'>
   <img style="width: 100%; display: box; margin: auto" src="{{site.url}}/resources/3d_diffusion/scenescapes.png" alt="SceneScape"/>
   <figcaption align='center'>
-  <b>Fig 4:</b> <a href="https://scenescape.github.io/">SceneScape</a> is a bit more advanced than the simplified algorithm described above, but the idea is the same.
+  <b>Fig 8:</b> <a href="https://scenescape.github.io/">SceneScape</a> is a bit more advanced than the simplified algorithm described above, but the idea is the same.
   </figcaption>
 </figure>
 
@@ -139,16 +175,32 @@ Only it turns out that there are rough edges that need to be smoothed out (as do
 - Reprojection from previously captured RGBD images is not great and is much better done by building a mesh as a global scene representation.
 - The depth predicted from single images is inconsistent across the images (the differences between depth do not respect the changes in camera position), so the authors fine-tune the depth predictor: after projecting the mesh on a new camera they fine-tune the depth predictor to agree with the depth that came out from that projection. Once the depth predictor agrees with the mesh, we can predict the values for the holes in the depth map. This requires optimization of the depth-predictor at every generated frame. The authors don't mention how many gradient steps it takes.
 - The diffusion model used in the paper is based on quantized VQVAE embeddings (I'm not sure but I'm guessing it's StableDiffusion, which follows Latent Diffusion?). Since VQVAE autoencoding results is somewhat low reconstruction quality, the authors need to finetune the VQVAE decoder as well to obtain good reconstruction quality. Similarly to the depth predictor, they first optimize it so that it agrees on these parts of the image that are reprojected from the mesh and then use the finetuned decoder to fill in any holes (RGB and depth will have the same holes).
-- Lastly, the inpainted part of the frame may not agree semantically with the text prompt very well; they generate multiple frames and then use cosine distance between the CLIP embeddings of the text and the generated frames to choose the frame that is best aligned with the prompt[^why_text_to_image_is_important].
-
-[^why_text_to_image_is_important]: a
+- Lastly, the inpainted part of the frame may not agree semantically with the text prompt very well; they generate multiple frames and then use cosine distance between the CLIP embeddings of the text and the generated frames to choose the frame that is best aligned with the prompt.
 
 Limitations:
 - The mesh representation doesn't work well for outdoor scenes (depth disconituities between objects and the sky).
 - There is error accumulation in long generated sequences that sometimes lead to less-than-realistic results.
 
+### Why is it important for the image model to be text conditioned?
+I left this discussion until after describing the two approaches of extracting and injecting geometry, because it requires understanding some technical details about how these methods work.
+
+Generally speaking, modelling conditional probability distributions is easier than modelling unconditional ones. This may seem counter-intuitive at first, because to modal a conditional probability $$p(x \mid z)$$ you have to learn the relationship between $$x$$ and $$z$$, which you don't have to do if you are modelling just $$p(x)$$. While that is true, $$p(x)$$ is generally a much more complicated object than $$p(x \mid z)$$. To see this, let's look at a Gaussian mixture with K components. In this case, to recover the true $$p(x)$$ with a learned $$\widetilde{p}(x)$$, we have to parametrize $$\widetilde{p}(x)$$ with a family of distributions expressive enough to cover the 10 different modes.  If, however, we model the conditional $$p(x \mid z)$$ where $z$ now is an index telling us which mode we care about, the learned $$\widetilde{p}(x \mid z)$$ has to model just one mode at a time. In this example, it can be just Gaussian. A larger-scale example is that of ImageNet with a 1000 different classes. In that case you can think of the data distribution as a mixture of a 1000 components, but now the components are very high-dimensional (images of shape 224x224x3), and the individual components are highly non-Gaussian, so the problem is much more difficult. Modelling conditionals in this case is way simpler.
+
+So what does this have to do with image models and geometry?
+
+I did some basic experiments with a DreamFusion-like setup, and where I played with an unconditional image model as well (trained from scratch on a smaller dataset), where I was interested in inferring NeRFs of whole scenes rather than single objects. It turns out that. It turns out that if the image model is unconditional, the gradients that it produces to train the NeRF point in a multitude of different directions. What happens in practice is that the NeRF initially starts to represent a scene, but eventually that scene disappears and the NeRF represents just empty space. This changes when we introduce conditioning: either text describing object (like in DreamFusion or SJC), or an image (like in RealFusion or NerfDiff). The bottom line: too many modes lead to too high variance of the gradients used to train the NeRF. Decreasing the number of modes leads to better-behaved gradients and thus learning.
+
+A very similar argument applies to injecting geometry into an image model. One of the limitations of SceneScape is the accumulation of errors. This is partly mitigated by generating more than just one inpainting of the image from a new camera position, and then choosing the one that best aligns with the **text prompt**. So the image model had many more modalities (if it was unconditional), it would be much more likely to inpaint missing parts of the image in a way that is not very consistent with the presented image, leading to faster error accumulation. If the model wasn't text-conditioned, the authors couldn't have done the CLIP trick of choosing the most suitable image in the first place, which would have significantly exacerbated the error accumulation.
+
+So we see that the ability to model insanely complex distribution (unconditional distributions of real images) is actually counter-productive. Perhaps that's ok, because whenever we want to generate an image, we would like to have some control over what we're generating. However, this suggests a future failure case. As the generative models get bigger, more expressive, and trained on more data, they will represent distributions with more and more modes. This is true even for conditional models. Does this mean that with the advances in generative modelling, the approaches of injecting and extracting geometry (and anything that requires constraining the variance of the distribution) will stop working? As with anything, there will be workaround. But it's an interesting failure cases and it might be useful to keep it in mind.
+
+
 
 ### Conclusions
+
+While I'm not sure what I actually said with this blog, what I wanted to say is this[^gaiman]:
+
+[^gaiman]: This is a paraphrase of Neil Gaiman from one of his speeches, taken from his book "The View from the Cheap Seats: Selected Nonfiction".
 
 #### Acknowledgements
 
