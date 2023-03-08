@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Geometry in Text-to-Image Diffusion Models"
-date:   2023-03-06 16:23:0 +0000
+date:   2023-03-08 16:23:0 +0000
 comments: True
 share: True
 categories: ml
