@@ -36,3 +36,5 @@ linkedin_username: adamkosiorek
 
 # Build settings
 markdown: kramdown
+
+permalink: /:title/
