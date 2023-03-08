@@ -206,7 +206,7 @@ While I'm not sure what I said with this blog, what I wanted to say is this[^gai
 [^gaiman]: This is a paraphrase of Neil Gaiman from one of his speeches, taken from his book "The View from the Cheap Seats: Selected Nonfiction".
 
 #### Acknowledgements
-I would like to thank Heiko Strathmann and Danilo J. Rezende for numerous discussions about topics covered in this blog. I also thank Jimmy Shi, Hyunjik Kim, Leonard Hasenclever, Adam Goliński, and Heiko for feedback on an initial version of this post.
+I would like to thank [Heiko Strathmann](https://scholar.google.co.uk/citations?user=QFseZ2gAAAAJ&hl=en) and [Danilo J. Rezende](https://scholar.google.com/citations?user=UGlyhFMAAAAJ&hl=en) for numerous discussions about topics covered in this blog. I also thank [Jimmy Shi](https://yugeten.github.io/), [Hyunjik Kim](https://hyunjik11.github.io/), [Leonard Hasenclever](https://leonard-hasenclever.github.io/), [Adam Goliński](http://adamgol.me/), and Heiko for feedback on an initial version of this post.
 
 
 ### Footnotes
