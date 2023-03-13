@@ -88,7 +88,10 @@ It turns out that both approaches are possible, do not require re-training of th
 ### Extracting Geometry from an Image Model
 Given that text-to-image diffusion models[^not_dreambooth] can generate pretty pictures and know about geometry, it is natural to ask if we can extract that geometry from these models. That is, can we lift a generated 2D picture to a full 3D scene?
 The answer is, of course, yes. But why does it work?
-Because any 2D rendering of a 3D representation is an image, and if that representation contains a scene familiar to the image model (i.e. in the model distribution), that rendered image should have a high likelihood under the image model. Conversely, if the represented scene is not familiar to the image model, the rendered image will have a low likelihood. Therefore, if we start from a random scene, the rendered images will have a low likelihood under the image model. But if we then manage to compute the gradients of the image model likelihood with respect to the 3D representation, we'll be able to nudge the 3D representation into something that has a bit higher likelihood under that image model. In practice, DreamFusion and SJC use pre-trained large-scale text-to-image diffusion models and evaluate the gradient with respect to the image as the score-matching objective, but it doesn't really matter. Any image model that can score a rendered image will do, including a VAE or any energy-based model including a GAN discriminator, a contrastive model such as [CLIP](https://openai.com/research/clip) or even [a classifier](https://arxiv.org/abs/1912.03263). Check out [DreamFields](https://arxiv.org/abs/2112.01455) which uses CLIP to generate images and the [RealFusion](https://arxiv.org/abs/2302.10663) paper (described below), which compares diffusion score against CLIP for training a NeRF.
+Because any 2D rendering of a 3D representation is an image, and if that representation contains a scene familiar to the image model (i.e. in the model distribution), that rendered image should have a high likelihood under the image model. Conversely, if the represented scene is not familiar to the image model, the rendered image will have a low likelihood. Therefore, if we start from a random scene, the rendered images will have a low likelihood under the image model. But if we then manage to compute the gradients of the image model likelihood with respect to the 3D representation, we'll be able to nudge the 3D representation into something that has a bit higher likelihood under that image model. 
+Although they differ in derivations, both DreamFusion and SJC come up with novel image-space losses that capture the score (the derivative of the log probability) of a NeRF-rendered image under a pre-trained large-scale text-to-image diffusion model that is then back-propagated onto the NeRF parameters.
+
+In theory, you don't even have to use a diffusion model: any image model that can score a rendered image will do, including a VAE or any energy-based model including a GAN discriminator, a contrastive model such as [CLIP](https://openai.com/research/clip) or even [a classifier](https://arxiv.org/abs/1912.03263). Check out [DreamFields](https://arxiv.org/abs/2112.01455) which uses CLIP to generate images and the [DreamFusion](https://dreamfusion3d.github.io) and [RealFusion](https://arxiv.org/abs/2302.10663) papers (described below), which compare diffusion score against CLIP for training a NeRF. As Ben Poole pointed out, this may not work well in practice, since modes do not usually look like samples (see [Sander's blog on typicality](https://sander.ai/2020/09/01/typicality.html)), and likelihood from a VAE or EBM may fail in high dimensions.
 
 
 [^not_dreambooth]: It doesn't even have to be DreamBooth; standard text-to-image models know just as much about geometry. Unlike in DreamBooth, though, diffusion models will render different scenes for different prompts, so it's harder to verify that different prompts do, in fact, correspond to different views.
@@ -112,7 +115,7 @@ The simplified algorithm is as follows (the DreamFusion version):
 5. Use the score-matching loss as a gradient with respect to the rendered image, and backpropagate it to NeRF's parameters.
 6. Go to step 2.
 
-Of course, life is never that easy, and DreamFusion comes with several hacks, including changing the text prompt based on the sampled camera pose, clipping the scene represented by the NeRF to a small ball around the origin (any densities outside of the ball are set to zero), putting the rendered object on different backgrounds, additional losses that ensure e.g. that most of the space is unoccupied.
+Of course, life is never that easy, and DreamFusion comes with several hacks, including changing the text prompt based on the sampled camera pose, clipping the scene represented by the NeRF to a small ball around the origin (any densities outside of the ball are set to zero), putting the rendered object on different backgrounds, additional losses that ensure e.g. that most of the space is unoccupied or that normals are well-behaved. Most of these tricks are designed to reveal bad learned geometry under the NeRF.e
 
 #### Why Does Extracting Geometry Lead to Cartoonish Objects?
 
@@ -161,9 +164,9 @@ But mostly, the image will look ok. The diffusion model can fill in the holes, a
 A naive version of the [SceneScape](https://scenescape.github.io) algorithm requires:
 - a pretrained text-to-image diffusion model capable of inpainting missing values,
 - a pretrained depth-from-a-single-image predictor (required for warping (above) or mesh building (below)),
-- a method to infer intrinsic camera parameters for an RGBD image,
-- and a text prompt,
-- optionally also an image to start from.
+- a text prompt,
+- and optionally an image to start from,
+- and a method to infer intrinsic camera parameters for an RGBD image.
 
 We then do the following:
 1. Generate an initial image (or use the one you want to start with). Initialize the camera position and orientation to an arbitrary value.
@@ -172,6 +175,11 @@ We then do the following:
 4. Change the camera position and orientation.
 5. Project the previously-generated RGBD images onto the new camera pose (this is where intrinsics come into play). It will contain holes.
 6. Feed the projected RGB image into the diffusion model and fill in any missing values. Go to step 2.
+
+In the paper, the authors start by generating an image from a text prompt.
+Camera intrinsics are necessary to render previously-generated RGBD images onto a new camera position.
+The paper assumes just an arbitrary fixed camera model, which introduces errors, but apparently the diffusion model is able to fix that, too. 
+I augmented the algorithm a little to allow starting from a real image and to reduce the reprojection errors from incorrect camera intrinsics.
 
 <figure id='scenescape'>
   <img style="width: 100%; display: box; margin: auto" src="{{site.url}}/resources/3d_diffusion/scenescapes.png" alt="SceneScape"/>
@@ -184,12 +192,14 @@ We then do the following:
 Only it turns out that there are rough edges that need to be smoothed out (as done in the paper):
 - Reprojection from previously captured RGBD images is not great and is much better done by building a mesh as a global scene representation.
 - The depth predicted from single images is inconsistent across the images (the differences between depth do not respect the changes in camera position), so the authors fine-tune the depth predictor: after projecting the mesh on a new camera they fine-tune the depth predictor to agree with the depth that came out from that projection. Once the depth predictor agrees with the mesh, we can predict the values for the holes in the depth map. This requires optimization of the depth predictor at every generated frame. The authors don't mention how many gradient steps it takes.
-- The diffusion model used in the paper is based on quantized VQVAE embeddings (I'm not sure but I'm guessing it's StableDiffusion, which follows Latent Diffusion). Since VQVAE autoencoding results in somewhat low reconstruction quality, the authors need to finetune the VQVAE decoder as well to obtain good reconstruction quality. Similarly to the depth predictor, they first optimize it so that it agrees on these parts of the image that are reprojected from the mesh and then use the finetuned decoder to fill in any holes (RGB and depth will have the same holes).
+- The authors use StableDiffusion as their text-to-image model, which is a [Latent Diffusion](https://arxiv.org/abs/2112.10752) model operating on embeddings of a VAE trained with perceptual and adversarial losses. Since the VAE did not optmize reconstruction error, autoencoding results in somewhat low reconstruction quality. Therefore, to reconstruct an image that fits visually with previously-observed frame, the authors need to finetune the VAE decoder to improve its reconstruction quality. Similarly to the depth predictor, they first optimize it so that it agrees on these parts of the image that are reprojected from the mesh and then use the finetuned decoder to fill in any holes (RGB and depth will have the same holes).
 - Lastly, the inpainted part of the frame may not agree semantically with the text prompt very well; they generate multiple frames and then use cosine distance between the CLIP embeddings of the text and the generated frames to choose the frame that is best aligned with the prompt.
 
 Limitations:
 - The mesh representation doesn't work well for outdoor scenes (depth discontinuities between objects and the sky).
 - There is error accumulation in long generated sequences that sometimes lead to less-than-realistic results.
+
+While not stated in the paper, Rafail mentioned that they finetune the depth predictor and the VAE decoder for 300 and 100 gradients steps, respectively. It takes about an hour to generate 50 frames on a Tesla V100.
 
 ### Why is it important for the image model to be text conditioned?
 I left this discussion until after describing the two approaches of extracting and injecting geometry because it requires understanding some technical details about how these methods work.
@@ -212,6 +222,8 @@ While I'm not sure what I said with this blog, what I wanted to say is this[^gai
 
 #### Acknowledgements
 I would like to thank [Heiko Strathmann](https://scholar.google.co.uk/citations?user=QFseZ2gAAAAJ&hl=en) and [Danilo J. Rezende](https://scholar.google.com/citations?user=UGlyhFMAAAAJ&hl=en) for numerous discussions about topics covered in this blog. I also thank [Jimmy Shi](https://yugeten.github.io/), [Hyunjik Kim](https://hyunjik11.github.io/), [Leonard Hasenclever](https://leonard-hasenclever.github.io/), [Adam Goliński](http://adamgol.me/), and Heiko for feedback on an initial version of this post.
+
+Also thanks to Rafail Fridman and [Ben Poole](https://research.google/people/BenPoole/) who provided feedback on the SceneScape and DreamFusion coverage in this blog, respectively.
 
 
 ### Footnotes
