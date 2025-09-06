@@ -6,24 +6,20 @@ permalink: /about/
 
 ![Adam R. Kosiorek](../resources/me.jpg){:style="width: 200px; overflow: hidden; border-radius: 50%; float: right; padding-left: 20px"}
 
-Hi, I'm Adam.
-I'm passionate about machine learning, particularly deep generative modelling and representation learning.
-I spend a lot of time thinking about what objects are and how to learn about them from vision without any supervision.
-I'm also interested in various inference methods, neural net architectures including attention and memory, and in everything that can be described as "machine reasoning".
-Feel free to reach out if you want to chat about or work on any of these topics!
+London, 6th September 2025.
 
-* I'm a Research Scientist at [DeepMind](https://deepmind.com/) in London.
-* I got a PhD from the University of Oxford, where I worked with [Ingmar Posner](http://ori.ox.ac.uk/mrg_people/ingmar-posner/) and [Yee Whye Teh](https://www.stats.ox.ac.uk/~teh/) on object tracking, generative modelling and representation learning and wrote a thesis on ["Learning Object-Centric Representations"](https://github.com/akosiorek/phd_thesis/blob/master/main.pdf).
-* I interned at [Google Brain]() in Toronto with [Geoff Hinton](http://www.cs.toronto.edu/~hinton/) and [Sara Sabour](https://scholar.google.ca/citations?user=l8wQ39EAAAAJ&hl=en), where I developed a new version of Capsule Networks.
-* I interned at [DeepMind](https://deepmind.com/), where I worked with [Danilo J. Rezende](https://scholar.google.co.uk/citations?user=UGlyhFMAAAAJ&hl=en).
-* I received an MSc in Computational Science & Engineering from the Technical University of Munich, where I worked on VAEs for [Arm Movement Prediction](http://brml.org/positions/master-thesis-arm-movement-prediction/) with [Patrick van der Smagt](http://brml.org/people/smagt/).
+Hi, I'm Adam. I'm an AI scientist at DeepMind's Science unit, where I'm focused on one of the most fascinating challenges I can imagine: understanding the language of our DNA. My work is at the intersection of biology and artificial intelligence, where I try to understand how the genome is used by different cells and how mutations can affect their function.
 
-Along my studies, I worked at Bloomberg, Samsung and IBM on various machine learning projects.
-I am always looking for exciting research and professional opportunities, so feel free to get in touch.
+In my most recent project, I helped deliver [AlphaGenome](https://deepmind.google/discover/blog/alphagenome-ai-for-better-understanding-the-genome/), a deep learning model that predicts gene expression and various properties of a DNA sequence. My hope is that models like this will help us to diagnose rare genetic diseases, understand cancer, and aid longevity research.
 
-In my free time I read lots of books, train calithenics, lift heavy weights, jog and try to spend as much time as possible hiking somewhere in the mountains.
+My shift to biology is relatively recent, with most of my research career in learning grounded representations and building generative models of images, videos, and 3D scenes. This work, which included a collaboration with Geoff Hinton on capsule networks, was centered on baking structure directly into the model. While I've moved away from that approach, I'm still convinced that the underlying question -- how can we build models that learn efficiently and continually without massive, human-curated datasets -- is fundamental to our pursuit of truly general AI. And I think we can do better than next-token prediction with transformers -- humans being the best example of that.
 
-[My CV (updated 03/2020)](../resources/cv_adam_kosiorek.pdf)
+When not at a keyboard, you'll find me with a book, or trying to move as much as I can: running, swimming, lifting, dancing, or climbing. More recently, I've been exploring my voice and learning the handpan. I also make it a point to write every day, and to be in the mountains as much as I can. You can find some of my non-technical writing on [my substack](https://adamkosiorek.substack.com/).
+
+If you have ideas related to any of the above, feel free to reach out. I answer every email.
+
+
+[My CV (updated 06/2025)](../resources/cv_adam_kosiorek.pdf)
 
 <div style="margin: 150px;"></div>
 

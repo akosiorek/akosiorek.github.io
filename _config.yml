@@ -9,7 +9,7 @@
 title: Adam Kosiorek
 email: adamrk@google.com
 description: > # this means to ignore newlines until "baseurl:"
-  Representation Learning and Generative Modelling
+  Understanding Biology through AI
 #baseurl: "" # the subpath of your site, e.g. /blog
 #url: "http://yourdomain.com" # the base hostname & protocol for your site
 
@@ -31,7 +31,7 @@ defaults:
 
 
 twitter_username: arkosiorek
-github_username:  akosiorek
+# github_username:  akosiorek
 linkedin_username: adamkosiorek
 
 # Build settings
